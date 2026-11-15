@@ -1,0 +1,311 @@
+# Package index
+
+## Example data
+
+- [`scrt_example_data()`](https://midimagi.github.io/scRTtools/reference/scrt_example_data.md)
+  : Small example dataset
+
+## Genome bins and read counting
+
+Fixed-size bins, mappability, per-window read counts and smoothing.
+
+- [`make_fixed_bins()`](https://midimagi.github.io/scRTtools/reference/make_fixed_bins.md)
+  : Define fixed-width genomic windows
+- [`compute_bin_mappability()`](https://midimagi.github.io/scRTtools/reference/compute_bin_mappability.md)
+  : Compute GC fraction and mappability for fixed genome windows
+- [`count_reads()`](https://midimagi.github.io/scRTtools/reference/count_reads.md)
+  : Count reads per genomic window
+- [`filter_windows()`](https://midimagi.github.io/scRTtools/reference/filter_windows.md)
+  : Segment and filter copy-number windows
+- [`smooth_windows()`](https://midimagi.github.io/scRTtools/reference/smooth_windows.md)
+  : Smooth window values and compute z-scores
+- [`calculate_OE_ratio()`](https://midimagi.github.io/scRTtools/reference/calculate_OE_ratio.md)
+  : GC-correct read-count windows for one sample
+- [`export_mcol()`](https://midimagi.github.io/scRTtools/reference/export_mcol.md)
+  : Export a GRangesList metadata column to BigWig
+
+## Cell QC and G1 cells
+
+- [`calculate_mapd()`](https://midimagi.github.io/scRTtools/reference/calculate_mapd.md)
+  : Calculate per-cell coverage and MAPD from a tile count matrix
+- [`find_g1_cells()`](https://midimagi.github.io/scRTtools/reference/find_g1_cells.md)
+  : Identify G1-phase cells from coverage and scaled MAPD
+- [`define_G1_windows()`](https://midimagi.github.io/scRTtools/reference/define_G1_windows.md)
+  : Define G1-derived windows from a fragment file
+- [`synchronize_bins()`](https://midimagi.github.io/scRTtools/reference/synchronize_bins.md)
+  : Synchronise retained bins across samples
+
+## Fragment downsampling
+
+- [`downsample_fragments()`](https://midimagi.github.io/scRTtools/reference/downsample_fragments.md)
+  : Randomly downsample a 10x fragment file
+- [`optimize_shrink_factor()`](https://midimagi.github.io/scRTtools/reference/optimize_shrink_factor.md)
+  : Find the coverage shrink factor that matches two conditions
+
+## Replication states
+
+HMM inference of single-cell replication states and parameter tuning.
+
+- [`infer_single_cell_states()`](https://midimagi.github.io/scRTtools/reference/infer_single_cell_states.md)
+  : Infer replication states of one cell
+- [`assign_replication_states()`](https://midimagi.github.io/scRTtools/reference/assign_replication_states.md)
+  : Assign replication states to G1 and genome windows
+- [`compute_rep_percent()`](https://midimagi.github.io/scRTtools/reference/compute_rep_percent.md)
+  : Compute percent replication and QC cells from bin-level replication
+  states
+- [`evaluate_state_parameters()`](https://midimagi.github.io/scRTtools/reference/evaluate_state_parameters.md)
+  : Evaluate replication-state parameters on a grid
+- [`rank_state_parameters()`](https://midimagi.github.io/scRTtools/reference/rank_state_parameters.md)
+  : Rank evaluated replication-state parameters
+
+## Replication tracks
+
+- [`define_replication_tracks()`](https://midimagi.github.io/scRTtools/reference/define_replication_tracks.md)
+  : Identify replication tracks from bin-level replication states
+- [`calc_rep_track_lengths()`](https://midimagi.github.io/scRTtools/reference/calc_rep_track_lengths.md)
+  : Table of replication-track lengths
+- [`calc_rep_track_gaps()`](https://midimagi.github.io/scRTtools/reference/calc_rep_track_gaps.md)
+  : Gaps between adjacent replication tracks
+- [`count_track_centers()`](https://midimagi.github.io/scRTtools/reference/count_track_centers.md)
+  : Count replication-track centres in genomic bins
+
+## Pseudobulk replication timing and peaks
+
+- [`aggregate_pseudobulk_s_g1_counts()`](https://midimagi.github.io/scRTtools/reference/aggregate_pseudobulk_s_g1_counts.md)
+  : Aggregate per-cell CP10K counts of S and G1 cells over several
+  samples
+- [`calculate_pseudobulk_rt()`](https://midimagi.github.io/scRTtools/reference/calculate_pseudobulk_rt.md)
+  : Calculate a pseudobulk replication-timing signal
+- [`calculate_pseudobulk_rt_g1_ratio()`](https://midimagi.github.io/scRTtools/reference/calculate_pseudobulk_rt_g1_ratio.md)
+  : Pseudobulk replication timing as a z-scored S/G1 ratio
+- [`export_pseudobulk_g1_ratio()`](https://midimagi.github.io/scRTtools/reference/export_pseudobulk_g1_ratio.md)
+  : S/G1 ratio pseudobulk for a group of samples, optionally written to
+  bigWig
+- [`find_rt_peaks()`](https://midimagi.github.io/scRTtools/reference/find_rt_peaks.md)
+  : Find local maxima in a binned genomic signal
+- [`annotate_peak_scores()`](https://midimagi.github.io/scRTtools/reference/annotate_peak_scores.md)
+  : Annotate regions with scores from feature tracks
+
+## Initiation zones
+
+- [`define_initiation_zones()`](https://midimagi.github.io/scRTtools/reference/define_initiation_zones.md)
+  : Define single-cell replication initiation zones
+- [`calculate_firing_order()`](https://midimagi.github.io/scRTtools/reference/calculate_firing_order.md)
+  : Firing-order consistency of initiation zones from replication states
+- [`calculate_firing_range()`](https://midimagi.github.io/scRTtools/reference/calculate_firing_range.md)
+  : Firing range of initiation zones
+- [`predict_firing_order()`](https://midimagi.github.io/scRTtools/reference/predict_firing_order.md)
+  : Firing-order consistency of initiation zones from track centres
+- [`fit_all_izone_velocities()`](https://midimagi.github.io/scRTtools/reference/fit_all_izone_velocities.md)
+  : Track-length velocity of each initiation zone
+
+## Initiation-zone adjacency
+
+- [`assign_rep_stage()`](https://midimagi.github.io/scRTtools/reference/assign_rep_stage.md)
+  : Replication stage labels from replication percentage
+
+- [`build_firing_matrix()`](https://midimagi.github.io/scRTtools/reference/build_firing_matrix.md)
+  : Cell x IZ firing matrix from track centres
+
+- [`make_adjacent_pairs()`](https://midimagi.github.io/scRTtools/reference/make_adjacent_pairs.md)
+  : Adjacent IZ pairs with firing-range features
+
+- [`make_pair_init()`](https://midimagi.github.io/scRTtools/reference/make_pair_init.md)
+  :
+
+  Pairs of IZs separated by `n_adj` IZs
+
+- [`summarise_adjacency_by_stage()`](https://midimagi.github.io/scRTtools/reference/summarise_adjacency_by_stage.md)
+  : Adjacent-IZ co-firing by replication stage
+
+- [`summarise_cell_adjacency()`](https://midimagi.github.io/scRTtools/reference/summarise_cell_adjacency.md)
+  : Per-cell co-firing of adjacent IZs
+
+- [`summarise_pair_adjacency()`](https://midimagi.github.io/scRTtools/reference/summarise_pair_adjacency.md)
+  : Per-pair co-firing of adjacent IZs across selected cells
+
+- [`summarise_pair_cofiring_bins()`](https://midimagi.github.io/scRTtools/reference/summarise_pair_cofiring_bins.md)
+  : Co-firing of IZ pairs in replication-progress bins
+
+## Initiation-zone heterogeneity
+
+- [`prepare_iz_data()`](https://midimagi.github.io/scRTtools/reference/prepare_iz_data.md)
+  : Prepare track, cell and IZ tables for heterogeneity analysis
+- [`call_iz_usage()`](https://midimagi.github.io/scRTtools/reference/call_iz_usage.md)
+  : Cell x IZ usage matrix from assigned tracks
+- [`call_iz_usage_from_states()`](https://midimagi.github.io/scRTtools/reference/call_iz_usage_from_states.md)
+  : Cell x IZ usage matrix from replication states
+- [`compute_usage_heterogeneity()`](https://midimagi.github.io/scRTtools/reference/compute_usage_heterogeneity.md)
+  : Usage heterogeneity of initiation zones
+- [`make_progress_bins()`](https://midimagi.github.io/scRTtools/reference/make_progress_bins.md)
+  : Replication-progress bins
+- [`build_replication_tensor()`](https://midimagi.github.io/scRTtools/reference/build_replication_tensor.md)
+  : Dense cell x IZ x position replication tensor
+- [`correct_replication_tensor()`](https://midimagi.github.io/scRTtools/reference/correct_replication_tensor.md)
+  : Remove the replication-progress trend from a replication tensor
+- [`correct_signal_matrix()`](https://midimagi.github.io/scRTtools/reference/correct_signal_matrix.md)
+  : Remove the replication-progress trend from a signal matrix
+- [`fit_timing_models()`](https://midimagi.github.io/scRTtools/reference/fit_timing_models.md)
+  : Logistic timing model of each initiation zone
+- [`summarize_track_features()`](https://midimagi.github.io/scRTtools/reference/summarize_track_features.md)
+  : Initiation-position and fork-asymmetry heterogeneity per IZ
+- [`summarize_track_shape()`](https://midimagi.github.io/scRTtools/reference/summarize_track_shape.md)
+  : Track-shape heterogeneity per IZ
+- [`assemble_iz_summary()`](https://midimagi.github.io/scRTtools/reference/assemble_iz_summary.md)
+  : Join IZ metadata and heterogeneity summaries
+
+## Initiation-zone heterogeneity, downstream analyses
+
+- [`select_iz_for_tensor()`](https://midimagi.github.io/scRTtools/reference/select_iz_for_tensor.md)
+  : Select informative initiation zones for the tensor
+- [`sample_cells_by_progress()`](https://midimagi.github.io/scRTtools/reference/sample_cells_by_progress.md)
+  : Sample cells evenly across replication progress
+- [`fit_nonnegative_cp()`](https://midimagi.github.io/scRTtools/reference/fit_nonnegative_cp.md)
+  : Non-negative CP decomposition of a three-way tensor
+- [`select_cp_rank()`](https://midimagi.github.io/scRTtools/reference/select_cp_rank.md)
+  : Choose the rank of a non-negative CP decomposition
+- [`cp_factor_tables()`](https://midimagi.github.io/scRTtools/reference/cp_factor_tables.md)
+  : Tables of CP factors
+- [`cluster_iz_heterogeneity()`](https://midimagi.github.io/scRTtools/reference/cluster_iz_heterogeneity.md)
+  : Cluster initiation zones by heterogeneity metrics
+- [`split_signed_residual()`](https://midimagi.github.io/scRTtools/reference/split_signed_residual.md)
+  : Split a signed residual tensor into non-negative parts
+- [`annotate_iz_bigwig()`](https://midimagi.github.io/scRTtools/reference/annotate_iz_bigwig.md)
+  : Mean bigWig signal around IZ centres
+- [`correlate_epigenomic_features()`](https://midimagi.github.io/scRTtools/reference/correlate_epigenomic_features.md)
+  : Correlate heterogeneity metrics with epigenomic features
+- [`fit_epigenomic_models()`](https://midimagi.github.io/scRTtools/reference/fit_epigenomic_models.md)
+  : Linear models of heterogeneity metrics on epigenomic features
+- [`fit_epigenomic_classifier()`](https://midimagi.github.io/scRTtools/reference/fit_epigenomic_classifier.md)
+  : Logistic classifier of high versus low heterogeneity
+- [`compute_nearby_iz_associations()`](https://midimagi.github.io/scRTtools/reference/compute_nearby_iz_associations.md)
+  : Co-usage of nearby initiation zones
+
+## Track velocity
+
+- [`summarize_track_lengths()`](https://midimagi.github.io/scRTtools/reference/summarize_track_lengths.md)
+  : Per-cell median track length
+- [`fit_track_length_models()`](https://midimagi.github.io/scRTtools/reference/fit_track_length_models.md)
+  : Fit track-length velocity models per group
+- [`fit_track_velocity_linear()`](https://midimagi.github.io/scRTtools/reference/fit_track_velocity_linear.md)
+  : Robust quadratic model of track length versus replication percentage
+- [`fit_track_velocity_ode()`](https://midimagi.github.io/scRTtools/reference/fit_track_velocity_ode.md)
+  : Robust ODE model of track length versus replication percentage
+- [`predict_rep_percent()`](https://midimagi.github.io/scRTtools/reference/predict_rep_percent.md)
+  : Replication percentage needed to reach given track lengths
+
+## Replication tempo
+
+- [`rep_tempo()`](https://midimagi.github.io/scRTtools/reference/rep_tempo.md)
+  : Regional replication percentage along genome-wide replication
+  progress
+
+- [`subset_rep_tempo()`](https://midimagi.github.io/scRTtools/reference/subset_rep_tempo.md)
+  :
+
+  Subset a `rep_tempo` table and keep its attributes
+
+- [`fit_rep_tempo()`](https://midimagi.github.io/scRTtools/reference/fit_rep_tempo.md)
+  : Fit a replication tempo curve to every region
+
+## Gene expression
+
+SC2P gene-level phases and expression tempo along S phase.
+
+- [`SC2P_gene_unit()`](https://midimagi.github.io/scRTtools/reference/SC2P_gene_unit.md)
+  : Gene-level SC2P Phase I / Phase II summaries
+- [`gex_tempo()`](https://midimagi.github.io/scRTtools/reference/gex_tempo.md)
+  : Summarise gene-expression dynamics along replication progress
+
+## S-phase progression markers
+
+- [`load_and_merge_rna_counts()`](https://midimagi.github.io/scRTtools/reference/load_and_merge_rna_counts.md)
+  : Load and merge RNA count matrices of several samples
+- [`normalize_sparse_counts()`](https://midimagi.github.io/scRTtools/reference/normalize_sparse_counts.md)
+  : Library-size normalise a sparse count matrix
+- [`prepare_metadata()`](https://midimagi.github.io/scRTtools/reference/prepare_metadata.md)
+  : Match cell metadata to RNA cells and flag eligible S-phase cells
+- [`prepare_group_inputs()`](https://midimagi.github.io/scRTtools/reference/prepare_group_inputs.md)
+  : Collect the cells and matrices of one analysis group
+- [`fit_gene_gams()`](https://midimagi.github.io/scRTtools/reference/fit_gene_gams.md)
+  : Fit progression GAMs for every gene
+- [`build_gene_models()`](https://midimagi.github.io/scRTtools/reference/build_gene_models.md)
+  : Fit the progression GAM and its null model for one gene
+- [`compute_gene_curves()`](https://midimagi.github.io/scRTtools/reference/compute_gene_curves.md)
+  : Fitted expression curves of selected genes and their clustering
+- [`predict_marginal_curve()`](https://midimagi.github.io/scRTtools/reference/predict_marginal_curve.md)
+  : Predict the fitted expression curve of one gene
+- [`scale_rows()`](https://midimagi.github.io/scRTtools/reference/scale_rows.md)
+  : Row-wise z-scores, dropping constant rows
+- [`summarize_gene_models()`](https://midimagi.github.io/scRTtools/reference/summarize_gene_models.md)
+  : Summarise the models of one gene
+- [`classify_progression_markers()`](https://midimagi.github.io/scRTtools/reference/classify_progression_markers.md)
+  : Classify genes as S-phase progression markers
+- [`analyze_one_group()`](https://midimagi.github.io/scRTtools/reference/analyze_one_group.md)
+  : Identify S-phase progression markers in one group of cells
+
+## Group comparison
+
+- [`call_diff_groups()`](https://midimagi.github.io/scRTtools/reference/call_diff_groups.md)
+  : Call regions that differ between two states
+
+- [`summarise_by_diff_group()`](https://midimagi.github.io/scRTtools/reference/summarise_by_diff_group.md)
+  : Per-state values of regions with their difference group
+
+- [`add_ma_columns()`](https://midimagi.github.io/scRTtools/reference/add_ma_columns.md)
+  : Add A / M columns comparing two states
+
+- [`add_rep_cluster()`](https://midimagi.github.io/scRTtools/reference/add_rep_cluster.md)
+  : Label cells or regions as early / middle / late by replication
+  progress
+
+- [`annotate_track_segments()`](https://midimagi.github.io/scRTtools/reference/annotate_track_segments.md)
+  : Annotate regions with a segmented signal track
+
+- [`combine_rep_tempo_feature()`](https://midimagi.github.io/scRTtools/reference/combine_rep_tempo_feature.md)
+  : Combine the replication-tempo fits of two states
+
+- [`pivot_state_wide()`](https://midimagi.github.io/scRTtools/reference/pivot_state_wide.md)
+  : Long table to one column per state
+
+- [`find_intersection()`](https://midimagi.github.io/scRTtools/reference/find_intersection.md)
+  : Crossing point of the velocity curves of two states
+
+- [`region_id_to_granges()`](https://midimagi.github.io/scRTtools/reference/region_id_to_granges.md)
+  :
+
+  Convert a table with a `region_id` column to GRanges
+
+- [`keep_autosomes()`](https://midimagi.github.io/scRTtools/reference/keep_autosomes.md)
+  : Keep autosomal ranges only
+
+- [`format_bp()`](https://midimagi.github.io/scRTtools/reference/format_bp.md)
+  : Format base-pair numbers as readable labels
+
+## Replication-expression association (HC3)
+
+- [`combine_two_samples()`](https://midimagi.github.io/scRTtools/reference/combine_two_samples.md)
+  : Combine the estimates of two samples
+- [`make_bin()`](https://midimagi.github.io/scRTtools/reference/make_bin.md)
+  : Genome-bin identifier of a position
+- [`add_interaction_terms()`](https://midimagi.github.io/scRTtools/reference/add_interaction_terms.md)
+  : Add regulator and local-replication interaction terms to a design
+  matrix
+- [`full_rank_model_matrix()`](https://midimagi.github.io/scRTtools/reference/full_rank_model_matrix.md)
+  : Model matrix without linearly dependent columns
+- [`fit_ols_hc3()`](https://midimagi.github.io/scRTtools/reference/fit_ols_hc3.md)
+  : Ordinary least squares with HC3 robust standard errors
+- [`fit_poisson_hc3()`](https://midimagi.github.io/scRTtools/reference/fit_poisson_hc3.md)
+  : Poisson regression with HC3 robust standard errors
+- [`permute_within_bins()`](https://midimagi.github.io/scRTtools/reference/permute_within_bins.md)
+  : Permute cells within sample and replication-progress bins
+
+## Small utilities
+
+- [`cor_safe()`](https://midimagi.github.io/scRTtools/reference/safe_summaries.md)
+  [`zscore_safe()`](https://midimagi.github.io/scRTtools/reference/safe_summaries.md)
+  [`peak_bin()`](https://midimagi.github.io/scRTtools/reference/safe_summaries.md)
+  : NA-tolerant summaries for heatmap tables
+- [`add_sample_prefix()`](https://midimagi.github.io/scRTtools/reference/sample_files.md)
+  [`find_sample_file()`](https://midimagi.github.io/scRTtools/reference/sample_files.md)
+  : Per-sample cell IDs and input files
