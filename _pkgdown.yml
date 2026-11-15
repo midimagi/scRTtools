@@ -1,0 +1,175 @@
+url: https://midimagi.github.io/scRTtools/
+
+template:
+  bootstrap: 5
+
+navbar:
+  structure:
+    left: [intro, reference, news]
+    right: [search, github]
+
+reference:
+- title: Example data
+  contents:
+  - scrt_example_data
+
+- title: Genome bins and read counting
+  desc: Fixed-size bins, mappability, per-window read counts and smoothing.
+  contents:
+  - make_fixed_bins
+  - compute_bin_mappability
+  - count_reads
+  - filter_windows
+  - smooth_windows
+  - calculate_OE_ratio
+  - export_mcol
+
+- title: Cell QC and G1 cells
+  contents:
+  - calculate_mapd
+  - find_g1_cells
+  - define_G1_windows
+  - synchronize_bins
+
+- title: Fragment downsampling
+  contents:
+  - downsample_fragments
+  - optimize_shrink_factor
+
+- title: Replication states
+  desc: HMM inference of single-cell replication states and parameter tuning.
+  contents:
+  - infer_single_cell_states
+  - assign_replication_states
+  - compute_rep_percent
+  - evaluate_state_parameters
+  - rank_state_parameters
+
+- title: Replication tracks
+  contents:
+  - define_replication_tracks
+  - calc_rep_track_lengths
+  - calc_rep_track_gaps
+  - count_track_centers
+
+- title: Pseudobulk replication timing and peaks
+  contents:
+  - aggregate_pseudobulk_s_g1_counts
+  - calculate_pseudobulk_rt
+  - calculate_pseudobulk_rt_g1_ratio
+  - export_pseudobulk_g1_ratio
+  - find_rt_peaks
+  - annotate_peak_scores
+
+- title: Initiation zones
+  contents:
+  - define_initiation_zones
+  - calculate_firing_order
+  - calculate_firing_range
+  - predict_firing_order
+  - fit_all_izone_velocities
+
+- title: Initiation-zone adjacency
+  contents:
+  - assign_rep_stage
+  - build_firing_matrix
+  - make_adjacent_pairs
+  - make_pair_init
+  - summarise_adjacency_by_stage
+  - summarise_cell_adjacency
+  - summarise_pair_adjacency
+  - summarise_pair_cofiring_bins
+
+- title: Initiation-zone heterogeneity
+  contents:
+  - prepare_iz_data
+  - call_iz_usage
+  - call_iz_usage_from_states
+  - compute_usage_heterogeneity
+  - make_progress_bins
+  - build_replication_tensor
+  - correct_replication_tensor
+  - correct_signal_matrix
+  - fit_timing_models
+  - summarize_track_features
+  - summarize_track_shape
+  - assemble_iz_summary
+
+- title: Initiation-zone heterogeneity, downstream analyses
+  contents:
+  - select_iz_for_tensor
+  - sample_cells_by_progress
+  - fit_nonnegative_cp
+  - select_cp_rank
+  - cp_factor_tables
+  - cluster_iz_heterogeneity
+  - split_signed_residual
+  - annotate_iz_bigwig
+  - correlate_epigenomic_features
+  - fit_epigenomic_models
+  - fit_epigenomic_classifier
+  - compute_nearby_iz_associations
+
+- title: Track velocity
+  contents:
+  - summarize_track_lengths
+  - fit_track_length_models
+  - fit_track_velocity_linear
+  - fit_track_velocity_ode
+  - predict_rep_percent
+
+- title: Replication tempo
+  contents:
+  - rep_tempo
+  - subset_rep_tempo
+  - fit_rep_tempo
+
+- title: Gene expression
+  desc: SC2P gene-level phases and expression tempo along S phase.
+  contents:
+  - SC2P_gene_unit
+  - gex_tempo
+
+- title: S-phase progression markers
+  contents:
+  - load_and_merge_rna_counts
+  - normalize_sparse_counts
+  - prepare_metadata
+  - prepare_group_inputs
+  - fit_gene_gams
+  - build_gene_models
+  - compute_gene_curves
+  - predict_marginal_curve
+  - scale_rows
+  - summarize_gene_models
+  - classify_progression_markers
+  - analyze_one_group
+
+- title: Group comparison
+  contents:
+  - call_diff_groups
+  - summarise_by_diff_group
+  - add_ma_columns
+  - add_rep_cluster
+  - annotate_track_segments
+  - combine_rep_tempo_feature
+  - pivot_state_wide
+  - find_intersection
+  - region_id_to_granges
+  - keep_autosomes
+  - format_bp
+
+- title: Replication-expression association (HC3)
+  contents:
+  - combine_two_samples
+  - make_bin
+  - add_interaction_terms
+  - full_rank_model_matrix
+  - fit_ols_hc3
+  - fit_poisson_hc3
+  - permute_within_bins
+
+- title: Small utilities
+  contents:
+  - safe_summaries
+  - sample_files

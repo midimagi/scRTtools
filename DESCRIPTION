@@ -1,0 +1,60 @@
+Package: scRTtools
+Title: Single-Cell Replication Timing Analysis Tools
+Version: 0.0.0.9000
+Authors@R: 
+    person("Hongjie", "Ji", , "hongjieji.pioneer@gmail.com", role = c("aut", "cre", "cph"))
+Description: Functions for single-cell DNA replication timing analysis
+    from 10x multiome data: genome binning, cell QC and G1 identification,
+    fragment downsampling, HMM-based replication state inference,
+    replication tracks, pseudobulk replication timing, initiation zones,
+    replication tempo modelling and replication-expression association
+    statistics.
+License: MIT + file LICENSE
+URL: https://github.com/midimagi/scRTtools, https://midimagi.github.io/scRTtools/
+BugReports: https://github.com/midimagi/scRTtools/issues
+Depends: 
+    R (>= 4.1.0)
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.1
+Imports: 
+    BiocGenerics,
+    BiocParallel,
+    changepoint,
+    data.table,
+    GenomeInfoDb,
+    GenomicRanges,
+    IRanges,
+    Matrix,
+    methods,
+    Rcpp,
+    rlang,
+    splines,
+    Rsamtools,
+    S4Vectors,
+    stats,
+    tools,
+    utils,
+    withr,
+    zoo
+LinkingTo: 
+    Rcpp
+Suggests: 
+    Biostrings,
+    cluster,
+    mgcv,
+    quantreg,
+    RhpcBLASctl,
+    robustbase,
+    dplyr,
+    jsonlite,
+    knitr,
+    rmarkdown,
+    DNAcopy,
+    rtracklayer,
+    SeuratObject,
+    testthat (>= 3.0.0),
+    tibble,
+    tidyr
+Config/testthat/edition: 3
+VignetteBuilder: knitr

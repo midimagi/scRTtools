@@ -1,0 +1,18 @@
+# compiled code
+src/*.o
+src/*.so
+src/*.dll
+# R / RStudio
+.Rproj.user
+.Rhistory
+.RData
+.Rdata
+.Ruserdata
+# build artefacts
+docs/
+doc/
+Meta/
+*.tar.gz
+scRTtools.Rcheck/
+vignettes/*.html
+vignettes/*.R

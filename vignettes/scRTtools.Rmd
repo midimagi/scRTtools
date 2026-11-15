@@ -1,0 +1,604 @@
+---
+title: "scRTtools: an end-to-end walk-through"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{scRTtools: an end-to-end walk-through}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 7,
+                      fig.height = 4, dpi = 96, out.width = "100%")
+options(width = 100, digits = 4)
+has_mgcv <- requireNamespace("mgcv", quietly = TRUE)
+```
+
+This vignette runs the whole analysis chain of the package on the small
+example dataset that ships with it, and shows the object each step returns.
+The package itself has no plotting functions; the figures are drawn with
+base R graphics so that you can see what each result looks like.
+
+| Section | Main functions |
+|---|---|
+| 1 | `make_fixed_bins()`, `count_reads()`, `calculate_mapd()`, `find_g1_cells()`, `define_G1_windows()` |
+| 2 | `assign_replication_states()`, `compute_rep_percent()` |
+| 3 | `define_replication_tracks()`, `calc_rep_track_lengths()`, `calc_rep_track_gaps()` |
+| 4 | `calculate_pseudobulk_rt()`, `find_rt_peaks()`, `count_track_centers()` |
+| 5 | `define_initiation_zones()`, `calculate_firing_range()`, `calculate_firing_order()` |
+| 6 | `rep_tempo()`, `fit_rep_tempo()` |
+| 7 | `SC2P_gene_unit()`, `gex_tempo()`, `analyze_one_group()` |
+| 8 | `pivot_state_wide()`, `add_ma_columns()`, `call_diff_groups()` |
+| 9 | `full_rank_model_matrix()`, `fit_ols_hc3()`, `fit_poisson_hc3()`, `combine_two_samples()` |
+| 10 | Seurat / Harmony / BPCells (not run), `add_sample_prefix()`, `find_sample_file()` |
+
+The example holds 40 cells of one sample, so the numbers below show what
+the objects look like. They carry no biological conclusion.
+
+```{r library, message = FALSE}
+library(scRTtools)
+library(GenomicRanges)
+col_g1 <- "#1b7bbf"; col_s <- "#d9822b"; col_rep <- "#6a3d9a"; col_unrep <- "#f2e6d0"
+```
+
+## The example data
+
+`scrt_example_data()` returns the autosomes (chr1 to chr19) of 12 G1 and 28
+S-phase cells of one mouse ESC 10x multiome sample (mm10, 20 kb bins).
+
+```{r example}
+ex <- scrt_example_data()
+names(ex)
+str(ex$info)
+ex$bins[1:3]
+dim(ex$bin_counts)
+head(ex$meta[, c("sample", "is_G1", "rep_percent", "coverage", "mapd")], 4)
+```
+
+## 1. Bins, counts and G1 cells
+
+The first steps read a genome, a mappability track and the fragment file of
+each sample, which the example does not ship. Their results are stored in
+`ex$bins`, `ex$bin_counts`, `ex$g1_windows` and `ex$window_counts`. On real
+data the calls look like this:
+
+```{r upstream, eval = FALSE}
+bins <- make_fixed_bins(seqinfo, bin_width = 20000)                 # 1.1
+bins <- compute_bin_mappability(bins, mappability_bedgraph)         # 1.1
+g1_windows <- define_G1_windows(bins, "atac_fragments.tsv.gz",      # 1.2
+                                meta_data, target_reads = 200)
+```
+
+MAPD (the median absolute pairwise difference of neighbouring bins) measures
+how uneven the coverage of a cell is. `find_g1_cells()` fits the relation
+between MAPD and coverage and calls the cells on the low-MAPD branch G1.
+
+```{r g1}
+bin_counts <- Matrix::Matrix(ex$bin_counts, sparse = TRUE)
+mapd <- calculate_mapd(bin_counts, ex$bins, ex$meta[, c("cell_id", "sample")],
+                       verbose = FALSE)
+g1 <- find_g1_cells(mapd, seed = 1, verbose = FALSE)
+head(g1[, c("sample", "coverage", "mapd", "scaled_mapd", "is_G1")], 4)
+table(recomputed = g1$is_G1, stored = ex$meta[g1$cell_id, "is_G1"])
+```
+
+The stored `is_G1` was called among all cells of the sample. Among these
+40 cells the call agrees for 36: it recovers 10 of the 12 G1 cells and calls
+2 S-phase cells G1. The rest of the vignette uses the stored labels.
+
+In the plot, colour is the call made here and shape is the stored label.
+
+```{r g1-plot}
+plot(g1$coverage, g1$mapd, log = "x", col = ifelse(g1$is_G1, col_g1, col_s),
+     pch = ifelse(ex$meta[g1$cell_id, "is_G1"], 17, 16),
+     xlab = "Reads per cell (log scale)", ylab = "MAPD")
+legend("topleft", c("called G1", "called S", "stored G1", "stored S"),
+       col = c(col_g1, col_s, "grey40", "grey40"), pch = c(15, 15, 17, 16),
+       bty = "n", cex = 0.8)
+```
+
+## 2. Replication states
+
+`assign_replication_states()` runs a two-state HMM in every S-phase cell on
+the G1 windows and maps the result back to the 20 kb bins (2 = unreplicated,
+4 = replicated, `NA` = no call). The `infer_args` are the package
+defaults.
+
+```{r states}
+s_cells <- rownames(ex$meta)[!ex$meta$is_G1]
+window_counts <- Matrix::Matrix(ex$window_counts[, s_cells], sparse = TRUE)
+res_states <- assign_replication_states(
+  window_counts, ex$g1_windows, ex$bins,
+  infer_args = list(hmm_aggr_width = 15L, init_ratio_lower = 1.2,
+                    final_ratio_lower = 1.4),
+  verbose = FALSE)
+sapply(res_states, dim)
+table(res_states$genobins_rep_states, useNA = "ifany")
+```
+
+`compute_rep_percent()` gives every cell its replicated fraction, which is
+its position in S phase, and drops cells that fail the quality filters.
+
+```{r rep-percent}
+res_rp <- compute_rep_percent(res_states$genobins_rep_states, ex$bins,
+                              ex$meta[s_cells, c("cell_id", "sample")],
+                              verbose = FALSE)
+md <- res_rp$meta_data
+head(md[order(md$rep_percent), c("sample", "rep_percent", "sigma_chr", "pass_qc")], 4)
+
+states <- res_rp$genobins_rep_states_filtered
+keep <- intersect(colnames(states), rownames(md)[is.finite(md$rep_percent)])
+states <- states[, keep, drop = FALSE]
+md <- md[keep, , drop = FALSE]
+dim(states)
+```
+
+All 28 S-phase cells pass the filters, and `rep_percent` computed here
+is identical to the value of the original analysis stored in `ex$meta`:
+
+```{r rep-percent-compare}
+cor(md$rep_percent, ex$meta[keep, "rep_percent"])
+max(abs(md$rep_percent - ex$meta[keep, "rep_percent"]))
+```
+
+With the cells sorted by `rep_percent`, the states on chr1 show S phase
+going from early to late: the replicated (purple) regions widen from the
+bottom row to the top. White means no call.
+
+```{r states-plot}
+on_chr1 <- which(as.character(seqnames(ex$bins)) == "chr1")
+cell_order <- order(md$rep_percent)
+replicated <- states[on_chr1, cell_order, drop = FALSE] == 4
+image(x = start(ex$bins)[on_chr1] / 1e6, y = seq_along(cell_order),
+      z = replicated + 0, col = c(col_unrep, col_rep), useRaster = TRUE,
+      xlab = "chr1 position (Mb)", ylab = "S-phase cells, by rep_percent")
+```
+
+To choose the HMM thresholds on new data, `evaluate_state_parameters()` runs
+a grid of settings on a subset of cells and `rank_state_parameters()` orders
+them.
+
+## 3. Replication tracks
+
+A replication track is a run of replicated bins in one cell.
+
+```{r tracks}
+tracks <- define_replication_tracks(states, ex$bins,
+                                    setNames(md$rep_percent, keep), verbose = FALSE)
+tracks
+track_lengths <- calc_rep_track_lengths(tracks)
+head(track_lengths[, c("chr", "start", "end", "width_bp", "rep_percent", "flag")], 4)
+track_gaps <- calc_rep_track_gaps(tracks)
+head(track_gaps[, c("rep_percent", "chr", "gap_bp")], 4)
+head(summarize_track_lengths(track_lengths), 4)
+```
+
+Tracks get longer as cells progress through S phase, because neighbouring
+tracks merge:
+
+```{r tracks-plot}
+by_cell <- split(track_lengths$width_bp / 1e6, track_lengths$rep_percent)
+boxplot(by_cell, at = 100 * as.numeric(names(by_cell)), boxwex = 2, log = "y",
+        xaxt = "n", col = col_rep, outline = FALSE, xlim = c(0, 100),
+        xlab = "rep_percent of the cell (%)", ylab = "Track length (Mb, log scale)")
+axis(1)
+```
+
+With several samples or conditions, `fit_track_velocity_linear()`,
+`fit_track_length_models()` and `fit_track_velocity_ode()` model track length
+against `rep_percent`. They need more cells than the example
+holds.
+
+## 4. Pseudobulk replication timing and peaks
+
+`calculate_pseudobulk_rt()` pools the S-phase cells and the G1 cells,
+corrects the S-phase counts for GC content and mappability with the G1
+pseudobulk, and returns a smoothed z-score per bin (high = early
+replicating). `find_rt_peaks()` finds its local maxima.
+
+```{r pseudobulk}
+rt <- suppressWarnings(calculate_pseudobulk_rt(
+  bin_counts, ex$bins, ex$meta[, c("cell_id", "sample", "is_G1", "pass_qc")]))
+rt[1:3]
+summary(rt$score)
+rt_peaks <- find_rt_peaks(rt)
+length(rt_peaks)
+rt_peaks[1:3]
+```
+
+The pseudobulk profile of chr1, with the RT peaks marked below the axis:
+
+```{r pseudobulk-plot}
+rt_chr1 <- rt[seqnames(rt) == "chr1"]
+plot(start(rt_chr1) / 1e6, rt_chr1$score, type = "l", col = "grey30",
+     xlab = "chr1 position (Mb)", ylab = "Pseudobulk RT (z-score)")
+rug(start(rt_peaks[seqnames(rt_peaks) == "chr1"]) / 1e6, col = col_s)
+```
+
+`count_track_centers()` counts, for a set of regions, the tracks whose centre
+falls in each of them.
+
+```{r centers}
+centers <- count_track_centers(tracks, rt_peaks)
+table(centers$score)
+centers[centers$score > 0][1:3]
+```
+
+`annotate_peak_scores()` adds the signal of bigWig or BED files to such
+regions. It needs external files and is not run here.
+
+## 5. Initiation zones
+
+Short tracks cluster where replication starts. `define_initiation_zones()`
+groups them around the RT peaks and returns the zones (IZ) and the tracks
+with the zone each was assigned to. The default is `min_usage = 3`; with
+28 cells the vignette lowers it to 2.
+
+```{r izones}
+res_iz <- define_initiation_zones(tracks, rt_peaks, min_usage = 2L, verbose = FALSE)
+iz <- res_iz$izones
+iz
+table(assigned = !is.na(unlist(res_iz$tracks)$iz_id))
+```
+
+The firing functions use an `rt` column on the zones. It
+is the fraction of cells replicated at the zone centre. A zone whose centre
+bin has no call in any cell gets `rt = NaN`. `calculate_firing_range()`
+takes all zones, because the `iz_id` of the tracks indexes the full set;
+the two order functions need a finite `rt` and get the other zones.
+
+```{r firing}
+centre_bin <- findOverlaps(resize(iz, 1L, fix = "center"), ex$bins, select = "first")
+iz$rt <- rowMeans(states[centre_bin, , drop = FALSE] == 4, na.rm = TRUE)
+sum(!is.finite(iz$rt))
+
+cells_with_tracks <- intersect(keep, unique(unlist(res_iz$tracks)$cell_id))
+firing_range <- calculate_firing_range(iz, states[, cells_with_tracks, drop = FALSE],
+                                       res_iz$tracks, verbose = FALSE)
+firing_range[1:3]
+
+iz_rt <- iz[is.finite(iz$rt)]
+firing_order <- calculate_firing_order(iz_rt, states, md)
+dim(firing_order)
+firing_order[1:4, ]
+predicted_order <- predict_firing_order(iz_rt, res_iz$tracks)
+predicted_order[1:4, ]
+```
+
+The zone `rt` computed from single cells agrees with the pseudobulk profile:
+zones that replicate in more cells sit at higher pseudobulk RT.
+
+```{r iz-plot}
+centre_rt <- findOverlaps(resize(iz, 1L, fix = "center"), rt, select = "first")
+plot(rt$score[centre_rt], iz$rt, pch = 16, col = adjustcolor(col_g1, 0.6),
+     xlab = "Pseudobulk RT at the zone centre (z-score)",
+     ylab = "Fraction of cells replicated")
+```
+
+Further zone analyses are in the package but need more zones or external
+data than the example offers: `fit_all_izone_velocities()` (4.4), the
+adjacent-zone functions `make_adjacent_pairs()`, `build_firing_matrix()` and
+`summarise_pair_adjacency()` (4.3.1), and the heterogeneity functions from
+`prepare_iz_data()` to `cluster_iz_heterogeneity()`.
+
+## 6. Replication tempo
+
+`rep_tempo()` groups the cells into bins along S phase and gives, for every
+region, its mean replicated percentage among the cells of each bin. `fit_rep_tempo()`
+fits a curve to each region and reports its timing (`t25`, `t50`, `t75`) and
+steepness. Real datasets use more bins (for example 100); five suit 28 cells.
+
+```{r tempo}
+tempo <- rep_tempo(states, iz, meta_data = md, nbin_rep = 5L)
+head(tempo, 4)
+tempo_fit <- fit_rep_tempo(tempo, model_type = "sslogis", verbose = FALSE)
+dim(tempo_fit)
+head(tempo_fit[, c("region_id", "t25", "t50", "t75", "max_slope", "r_squared",
+                   "fit_status")], 4)
+table(tempo_fit$fit_status)
+```
+
+The fitted curves of six zones with `fit_status == "ok"`, chosen across the
+range of `t50`, are drawn over the binned values (left); on the right is the
+distribution of `t50` over all such zones. With five bins many curves are
+steep, since few points lie on the rise.
+
+```{r tempo-plot}
+rep_bins <- attr(tempo_fit, "rep_bins")$rep_percent
+curves <- attr(tempo_fit, "curves")
+ok <- which(tempo_fit$fit_status == "ok")
+pick <- ok[order(tempo_fit$t50[ok])][round(seq(1, length(ok), length.out = 6))]
+pal <- hcl.colors(6, "Dark 3")
+op <- par(mfrow = c(1, 2))
+plot(NA, xlim = c(0, 100), ylim = c(0, 100), xlab = "rep_percent (%)",
+     ylab = "Replicated in the zone (%)")
+for (k in seq_along(pick)) {
+  lines(curves$rep_percent, 100 * curves$fraction[pick[k], ], col = pal[k])
+  points(rep_bins, unlist(tempo[pick[k], ]), col = pal[k], pch = 16)
+}
+hist(tempo_fit$t50[ok], breaks = 20, col = "grey80", border = "white",
+     main = "", xlab = "t50 (rep_percent, %)")
+par(op)
+```
+
+`model_type = "gam_low"` and `"gam_fast"` fit a GAM instead and need the
+`mgcv` package. `n_boot` adds bootstrap confidence intervals.
+
+## 7. RNA of the same cells
+
+The RNA counts cover the 24,860 genes of chr1 to chr19. Genes seen in fewer
+than three S-phase cells are dropped first, which leaves about an eighth of
+them.
+
+```{r rna}
+rna <- ex$rna_counts[, keep, drop = FALSE]
+rna <- rna[Matrix::rowSums(rna > 0) >= 3, , drop = FALSE]
+dim(rna)
+```
+
+`SC2P_gene_unit()` fits the two-phase model of SC2P to every gene. It
+reports the fraction of cells in Phase I (background counts) and, among the
+Phase II cells, the mean and the coefficient of variation of expression.
+
+```{r sc2p}
+sc2p <- suppressWarnings(SC2P_gene_unit(as.matrix(rna)))
+dim(sc2p)
+head(sc2p, 4)
+```
+
+```{r sc2p-plot}
+plot(sc2p$phase_II_mean, sc2p$phase_II_varcoff, log = "x", pch = 16, cex = 0.5,
+     col = adjustcolor("grey20", 0.4), xlab = "Phase II mean (log scale)",
+     ylab = "Phase II coefficient of variation")
+```
+
+`gex_tempo()` is the expression counterpart of `rep_tempo()`: expression of
+every gene in bins of cells along S phase, either from the SC2P model or as
+mean counts per 10,000.
+
+```{r gex-tempo}
+gex <- suppressWarnings(gex_tempo(rna, md, nbin_rep = 5L, method = "cp10k"))
+names(gex)
+head(gex$df_cp10k_mean, 4)
+```
+
+The S-phase progression markers are genes whose expression
+follows `rep_percent`. `analyze_one_group()` runs the whole analysis for one
+group of cells: a GAM per gene, the marker call and the fitted curves. The
+thresholds below are much looser than the defaults. The defaults need at
+least 50 cells per group, and with only that lowered to 10 they call no gene
+on 28 cells.
+
+```{r markers, eval = has_mgcv}
+meta <- ex$meta[, c("cell_id", "sample", "is_G1", "rep_percent", "pass_qc")]
+meta[keep, "rep_percent"] <- md$rep_percent
+meta$state <- "ctr"
+meta <- prepare_metadata(meta, colnames(ex$rna_counts))
+norm <- normalize_sparse_counts(ex$rna_counts)
+markers <- analyze_one_group(
+  "ctr", meta, norm$log_normalized, norm$normalized,
+  min_cells_per_group = 10L, min_cell_fraction = 0.05, fdr_threshold = 0.5,
+  gam_basis_k = 5L, n_curve_points = 41L, verbose = FALSE)
+names(markers)
+table(markers$gam_results$fit_status)
+dim(markers$marker_table)
+dim(markers$curves)
+```
+
+## 8. Comparing two groups (`retreat_figure6_helpers.R`)
+
+The group functions compare two conditions, `ctr` and `ama` by default. The
+example has one sample, so its S-phase cells are split into two pseudo-groups
+that alternate along `rep_percent`. The split has no meaning; it only shows
+the shape of the tables.
+
+```{r groups}
+state <- character(nrow(md))
+state[order(md$rep_percent, rownames(md))] <- rep(c("ctr", "ama"), length.out = nrow(md))
+names(state) <- rownames(md)
+table(state)
+
+all_tracks <- unlist(res_iz$tracks, use.names = FALSE)
+peak_id <- sprintf("%s:%d-%d", as.character(seqnames(rt_peaks)),
+                   start(rt_peaks), end(rt_peaks))
+long <- do.call(rbind, lapply(c("ctr", "ama"), function(s) {
+  cells <- names(state)[state == s]
+  usage <- countOverlaps(rt_peaks, all_tracks[all_tracks$cell_id %in% cells])
+  data.frame(region_id = peak_id, state = s, usage = ifelse(usage > 0, usage, NA))
+}))
+long$state <- factor(long$state, levels = c("ctr", "ama"))
+head(long, 3)
+```
+
+`pivot_state_wide()` puts the two groups side by side, `add_ma_columns()`
+adds the difference and the mean, and `call_diff_groups()` labels the regions
+that differ.
+
+```{r compare}
+wide <- pivot_state_wide(long, "region_id", "usage", na = "drop")
+head(wide, 3)
+head(add_ma_columns(wide, "log2"), 3)
+diff_groups <- call_diff_groups(long, "region_id", "usage", 0.5)
+table(diff_groups[[2]])
+```
+
+An MA plot of the two pseudo-groups, coloured by the call:
+
+```{r compare-plot}
+ma <- add_ma_columns(wide, "log2")
+grp <- as.character(diff_groups$iz_group[match(ma$region_id, diff_groups$region_id)])
+plot(ma$A, ma$M, pch = 16, cex = 0.6,
+     col = c(ama_up = col_s, ama_down = col_g1, no_sig = "grey70")[grp],
+     xlab = "A (mean log2 usage)", ylab = "M (log2 ama / ctr)")
+abline(h = 0, lty = 2)
+legend("topright", c("ama_up", "ama_down", "no_sig"), pch = 16, bty = "n",
+       col = c(col_s, col_g1, "grey70"), cex = 0.8)
+```
+
+`combine_rep_tempo_feature()`, `annotate_track_segments()`,
+`summarise_by_diff_group()` and `find_intersection()` continue from here on
+tempo fits, RT segments and track lengths of the two groups.
+
+## 9. Regressions with HC3 standard errors
+
+These functions relate replication to expression with genes as observations,
+fit the same model in each sample and combine the two. Here the two
+pseudo-groups stand in for two samples. The first model (`exposure`) regresses
+the replicated fraction at the gene start on the expression of the gene,
+adjusting for GC content and for the position of the gene on its chromosome.
+To keep the example short, one spline of position is shared by all
+chromosomes, so this term is only a rough adjustment. The second (`rt`) is a Poisson model
+of the gene counts with the replicated fraction as the predictor.
+
+```{r hc3}
+genes <- ex$genes
+tss <- GRanges(genes$chr, IRanges(genes$start, width = 1L))
+tss_bin <- findOverlaps(tss, ex$bins, select = "first")
+head(make_bin(genes$chr, genes$start), 3)
+
+fit_one <- function(s) {
+  cells <- names(state)[state == s]
+  d <- data.frame(
+    pos = genes$start / 1e6,
+    gc = ex$bins$gc_frequency[tss_bin],
+    rt = rowMeans(states[tss_bin, cells, drop = FALSE] == 4, na.rm = TRUE),
+    count = Matrix::rowSums(ex$rna_counts[genes$gene, cells, drop = FALSE]))
+  d <- d[!is.na(tss_bin) & ex$bins$is_mappable[tss_bin] %in% TRUE & is.finite(d$rt), ]
+  d$expr_z <- as.numeric(scale(log1p(d$count / sum(d$count) * 1e4)))
+  B <- full_rank_model_matrix(~ splines::ns(pos, df = 4) + gc, d)
+  ols <- fit_ols_hc3(cbind(B, exposure = d$expr_z), d$rt)
+  pois <- fit_poisson_hc3(cbind(B, rt = d$rt), d$count,
+                          rep(log(sum(d$count)), nrow(d)), "rt")
+  cols <- c("term", "beta", "se", "p", "n", "status")
+  cbind(sample = s, rbind(ols[cols], pois[cols]))
+}
+fit_table <- do.call(rbind, lapply(c("ctr", "ama"), fit_one))
+fit_table
+combine_two_samples(fit_table, "term")
+```
+
+The coefficients with their 95% HC3 confidence intervals:
+
+```{r hc3-plot, fig.height = 3}
+op <- par(mfrow = c(1, 2), mar = c(4, 4, 2, 1))
+for (tm in c("exposure", "rt")) {
+  f <- fit_table[fit_table$term == tm, ]
+  lo <- f$beta - 1.96 * f$se
+  hi <- f$beta + 1.96 * f$se
+  plot(f$beta, 1:2, xlim = range(0, lo, hi), ylim = c(0.5, 2.5), pch = 16,
+       yaxt = "n", xlab = "Coefficient", ylab = "", main = tm)
+  segments(lo, 1:2, hi, 1:2)
+  axis(2, 1:2, f$sample, las = 1)
+  abline(v = 0, lty = 2)
+}
+par(op)
+```
+
+`add_interaction_terms()` builds the design of the interaction models, and
+`permute_within_bins()` gives the permutation used for their
+null distribution: cells are shuffled only within bins of S-phase progress.
+
+```{r permute}
+set.seed(7)
+permute_within_bins(unname(state), md$rep_percent, 0.1)
+```
+
+## 10. Seurat objects: UMAP and pseudobulk RNA
+
+The example data is a list of plain matrices and `GRanges`, not a Seurat
+object, and the package does not depend on Seurat. The embedding and the
+pseudobulk RNA table are standard Seurat steps, so they
+are not package functions. The chunks below are **not run**; they show how the
+Seurat objects connect to the package. They assume the per-sample
+`wnn_rna_filtered.rds` objects (assay `rna`) and `genobins_20kb_raw_matrix.rds`
+DNA count matrices of the full dataset, and Seurat 5, harmony, BPCells and
+uwot.
+
+Merge the samples with the same `"<sample>-<barcode>"` cell IDs as the rest of
+the package (`find_sample_file()` and `add_sample_prefix()`), then build the
+RNA embedding: SCTransform, PCA, Harmony on `sample`, UMAP.
+
+```r
+library(Seurat)
+data_dir <- "results/1.data"
+samples <- c("scRT1", "scRT2")
+
+wnn_list <- lapply(samples, function(s) {
+  obj <- readRDS(find_sample_file(data_dir, s, "wnn_rna_filtered.rds"))
+  obj <- RenameCells(obj, new.names = add_sample_prefix(colnames(obj), s))
+  obj$sample <- s
+  obj$cell_id <- colnames(obj)
+  obj
+})
+wnn <- JoinLayers(Reduce(merge, wnn_list))
+
+wnn <- NormalizeData(wnn, assay = "rna")
+wnn <- SCTransform(wnn, assay = "rna")
+wnn <- RunPCA(wnn, assay = "SCT")
+wnn <- harmony::RunHarmony(wnn, group.by.vars = "sample", reduction.use = "pca",
+                           reduction.save = "har_pca")
+wnn <- RunUMAP(wnn, reduction = "har_pca", dims = 1:30, a = 0.7, b = 0.9,
+               reduction.name = "har_umap", reduction.key = "harumap_")
+```
+
+The DNA embedding uses the 20 kb bin counts (the input of `count_reads()` /
+`assign_replication_states()`) as a tile assay: TF-IDF style LSI with BPCells,
+50 SVD components, Harmony, UMAP. With both reductions in place, Seurat's
+weighted nearest neighbours give a joint RNA + DNA UMAP
+(`FindMultiModalNeighbors()`, the standard Seurat WNN call).
+
+```r
+library(BPCells)
+dna <- Reduce(cbind, lapply(samples, function(s) {
+  m <- readRDS(find_sample_file(data_dir, s, "genobins_20kb_raw_matrix.rds"))
+  colnames(m) <- add_sample_prefix(colnames(m), s)
+  as(m, "IterableMatrix")
+}))
+dna <- dna[, colnames(wnn)]
+wnn[["tile"]] <- CreateAssay5Object(counts = dna, min.cells = 0, min.features = 0)
+
+lsi <- log1p(1e4 * multiply_rows(multiply_cols(dna, 1 / Matrix::colSums(dna)),
+                                 1 / Matrix::rowMeans(dna)))
+st <- matrix_stats(lsi, col_stats = "variance")$col_stats
+lsi <- multiply_cols(add_cols(lsi, -st["mean", ]), 1 / st["variance", ])
+sv <- BPCells::svds(lsi, k = 50)
+pca_dna <- multiply_cols(sv$v, sv$d)
+dimnames(pca_dna) <- list(colnames(dna), paste0("LSI_", 1:50))
+wnn[["lsi"]] <- CreateDimReducObject(pca_dna, key = "LSI_", assay = "tile")
+wnn <- harmony::RunHarmony(wnn, group.by.vars = "sample", reduction.use = "lsi",
+                           reduction.save = "har_lsi")
+set.seed(2026)
+wnn <- RunUMAP(wnn, reduction = "har_lsi", dims = 1:50,
+               reduction.name = "hardnaumap", reduction.key = "hardnaumap_")
+
+# Joint RNA + DNA embedding (Seurat WNN).
+wnn <- FindMultiModalNeighbors(wnn, reduction.list = list("har_pca", "har_lsi"),
+                               dims.list = list(1:30, 2:50))
+wnn <- RunUMAP(wnn, nn.name = "weighted.nn", reduction.name = "wnn_umap",
+               reduction.key = "wnnUMAP_")
+```
+
+Package results attach to the object through `cell_id`, for example
+`rep_percent` from `compute_rep_percent()` and the G1/S labels from
+`find_g1_cells()`, to colour the UMAPs by S-phase progress. A pseudobulk RNA table
+sums the RNA counts per condition with `AggregateExpression()` and scales
+each condition to counts per 10,000. The per-cell CP10K pseudobulk
+of S and G1 cells used for replication-coupled expression is
+`aggregate_pseudobulk_s_g1_counts()`, which reads the count files directly and
+needs no Seurat object.
+
+```r
+meta <- readRDS(file.path(data_dir, "merge/meta_data.rds"))   # has `state`
+wnn$state <- factor(meta$state[match(colnames(wnn), meta$cell_id)],
+                    levels = c("ctr", "ama"))
+pb <- AggregateExpression(wnn, assays = "rna", group.by = "state")$rna  # sums counts
+pb <- pb[Matrix::rowSums(pb) > 0, ]
+cp10k <- sweep(as.matrix(pb), 2, Matrix::colSums(pb), "/") * 1e4
+head(cp10k)
+```
+
+## Session
+
+```{r session}
+sessionInfo()
+```
