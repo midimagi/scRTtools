@@ -29,6 +29,12 @@
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto">
 <li class="active nav-item"><a class="nav-link" href="../articles/scRTtools.html">Get started</a></li>
+<li class="nav-item dropdown">
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
+<li><a class="dropdown-item" href="../articles/figures.html">scRTtools: main figures from a 500-cell example</a></li>
+  </ul>
+</li>
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul>
@@ -398,14 +404,14 @@ maxima.</p>
 <span><span class="co">#&gt; GRanges object with 3 ranges and 1 metadata column:</span></span>
 <span><span class="co">#&gt;                        seqnames          ranges strand |     score</span></span>
 <span><span class="co">#&gt;                           &lt;Rle&gt;       &lt;IRanges&gt;  &lt;Rle&gt; | &lt;numeric&gt;</span></span>
-<span><span class="co">#&gt;   chr1-3000001-3020000     chr1 3000001-3020000      * | -0.685879</span></span>
-<span><span class="co">#&gt;   chr1-3020001-3040000     chr1 3020001-3040000      * | -0.697088</span></span>
-<span><span class="co">#&gt;   chr1-3040001-3060000     chr1 3040001-3060000      * | -0.703041</span></span>
+<span><span class="co">#&gt;   chr1-3000001-3020000     chr1 3000001-3020000      * | -0.685876</span></span>
+<span><span class="co">#&gt;   chr1-3020001-3040000     chr1 3020001-3040000      * | -0.697085</span></span>
+<span><span class="co">#&gt;   chr1-3040001-3060000     chr1 3040001-3060000      * | -0.703038</span></span>
 <span><span class="co">#&gt;   -------</span></span>
 <span><span class="co">#&gt;   seqinfo: 19 sequences from mm10 genome</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">rt</span><span class="op">$</span><span class="va">score</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. </span></span>
-<span><span class="co">#&gt; -3.2726 -0.6919 -0.1569 -0.0365  0.4389  4.9991</span></span>
+<span><span class="co">#&gt; -3.2726 -0.6919 -0.1569 -0.0365  0.4389  4.9990</span></span>
 <span><span class="va">rt_peaks</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/find_rt_peaks.html">find_rt_peaks</a></span><span class="op">(</span><span class="va">rt</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">rt_peaks</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 2080</span></span>
@@ -413,14 +419,14 @@ maxima.</p>
 <span><span class="co">#&gt; GRanges object with 3 ranges and 5 metadata columns:</span></span>
 <span><span class="co">#&gt;                        seqnames          ranges strand |     score  RT_value local_median</span></span>
 <span><span class="co">#&gt;                           &lt;Rle&gt;       &lt;IRanges&gt;  &lt;Rle&gt; | &lt;numeric&gt; &lt;numeric&gt;    &lt;numeric&gt;</span></span>
-<span><span class="co">#&gt;   chr1-4860001-4880000     chr1 4860001-4880000      * |  1.452566  1.452566     1.225637</span></span>
-<span><span class="co">#&gt;   chr1-7140001-7160000     chr1 7140001-7160000      * |  0.853135  0.853135     0.743260</span></span>
-<span><span class="co">#&gt;   chr1-8540001-8560000     chr1 8540001-8560000      * |  0.456936  0.456936     0.209519</span></span>
+<span><span class="co">#&gt;   chr1-4860001-4880000     chr1 4860001-4880000      * |  1.452559  1.452559     1.225631</span></span>
+<span><span class="co">#&gt;   chr1-7140001-7160000     chr1 7140001-7160000      * |  0.853131  0.853131     0.743256</span></span>
+<span><span class="co">#&gt;   chr1-8540001-8560000     chr1 8540001-8560000      * |  0.456934  0.456934     0.209518</span></span>
 <span><span class="co">#&gt;                        local_delta plateau_size</span></span>
 <span><span class="co">#&gt;                          &lt;numeric&gt;    &lt;integer&gt;</span></span>
-<span><span class="co">#&gt;   chr1-4860001-4880000    0.226929            1</span></span>
+<span><span class="co">#&gt;   chr1-4860001-4880000    0.226927            1</span></span>
 <span><span class="co">#&gt;   chr1-7140001-7160000    0.109875            1</span></span>
-<span><span class="co">#&gt;   chr1-8540001-8560000    0.247417            1</span></span>
+<span><span class="co">#&gt;   chr1-8540001-8560000    0.247416            1</span></span>
 <span><span class="co">#&gt;   -------</span></span>
 <span><span class="co">#&gt;   seqinfo: 19 sequences from mm10 genome</span></span></code></pre></div>
 <p>The pseudobulk profile of chr1, with the RT peaks marked below the
@@ -443,14 +449,14 @@ tracks whose centre falls in each of them.</p>
 <span><span class="co">#&gt; GRanges object with 3 ranges and 5 metadata columns:</span></span>
 <span><span class="co">#&gt;                          seqnames            ranges strand |     score  RT_value local_median</span></span>
 <span><span class="co">#&gt;                             &lt;Rle&gt;         &lt;IRanges&gt;  &lt;Rle&gt; | &lt;integer&gt; &lt;numeric&gt;    &lt;numeric&gt;</span></span>
-<span><span class="co">#&gt;   chr1-13660001-13680000     chr1 13660001-13680000      * |         1  0.364770     0.269727</span></span>
-<span><span class="co">#&gt;   chr1-15780001-15800000     chr1 15780001-15800000      * |         2  0.826600     0.606109</span></span>
-<span><span class="co">#&gt;   chr1-20860001-20880000     chr1 20860001-20880000      * |         1  0.670064     0.490125</span></span>
+<span><span class="co">#&gt;   chr1-13660001-13680000     chr1 13660001-13680000      * |         1  0.364768     0.269725</span></span>
+<span><span class="co">#&gt;   chr1-15780001-15800000     chr1 15780001-15800000      * |         2  0.826596     0.606107</span></span>
+<span><span class="co">#&gt;   chr1-20860001-20880000     chr1 20860001-20880000      * |         1  0.670061     0.490123</span></span>
 <span><span class="co">#&gt;                          local_delta plateau_size</span></span>
 <span><span class="co">#&gt;                            &lt;numeric&gt;    &lt;integer&gt;</span></span>
-<span><span class="co">#&gt;   chr1-13660001-13680000   0.0950432            1</span></span>
-<span><span class="co">#&gt;   chr1-15780001-15800000   0.2204906            1</span></span>
-<span><span class="co">#&gt;   chr1-20860001-20880000   0.1799389            1</span></span>
+<span><span class="co">#&gt;   chr1-13660001-13680000   0.0950428            1</span></span>
+<span><span class="co">#&gt;   chr1-15780001-15800000   0.2204895            1</span></span>
+<span><span class="co">#&gt;   chr1-20860001-20880000   0.1799381            1</span></span>
 <span><span class="co">#&gt;   -------</span></span>
 <span><span class="co">#&gt;   seqinfo: 19 sequences from mm10 genome</span></span></code></pre></div>
 <p><code><a href="../reference/annotate_peak_scores.html">annotate_peak_scores()</a></code> adds the signal of bigWig or BED
@@ -606,9 +612,9 @@ example 100); five suit 28 cells.</p>
 <span><span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">tempo_fit</span><span class="op">$</span><span class="va">fit_status</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  constant_response      curve_qc_flag         fit_failed            no_data                 ok </span></span>
-<span><span class="co">#&gt;                  2                132                 41                  1                109 </span></span>
+<span><span class="co">#&gt;                  2                132                 41                  1                110 </span></span>
 <span><span class="co">#&gt; partial_thresholds </span></span>
-<span><span class="co">#&gt;                164</span></span></code></pre></div>
+<span><span class="co">#&gt;                163</span></span></code></pre></div>
 <p>The fitted curves of six zones with <code>fit_status == "ok"</code>,
 chosen across the range of <code>t50</code>, are drawn over the binned
 values (left); on the right is the distribution of <code>t50</code> over

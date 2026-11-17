@@ -29,6 +29,12 @@
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto">
 <li class="nav-item"><a class="nav-link" href="../articles/scRTtools.html">Get started</a></li>
+<li class="active nav-item dropdown">
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
+<li><a class="dropdown-item" href="../articles/figures.html">scRTtools: main figures from a 500-cell example</a></li>
+  </ul>
+</li>
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul>
@@ -59,13 +65,16 @@
 
     
     
+<!-- figures.Rmd is generated from this file by vignettes/precompute.R; edit
+this file, not figures.Rmd. The code takes 15-35 minutes, so it is run once
+locally and the knitted result (text, output and figures-*.png) is committed;
+R CMD build and pkgdown only render the precomputed figures.Rmd. -->
 <blockquote>
-<p><strong>The code of this vignette was not run when this copy was
-built.</strong> It takes 20-35 minutes (mostly
+<p>This vignette is precomputed: its code was run when the package
+sources were prepared, not when the package was built. Running it
+yourself takes 15-35 minutes (mostly
 <code><a href="../reference/assign_replication_states.html">assign_replication_states()</a></code> on 500 cells) and needs
-ggplot2, hexbin, robustbase, irlba and uwot. Build it with
-<code>SCRTTOOLS_BUILD_FIGURES=true R CMD build scRTtools</code>, or knit
-this file after setting that environment variable.</p>
+ggplot2, hexbin, robustbase, irlba and uwot.</p>
 </blockquote>
 <p>This vignette recomputes the main figures of a scRT analysis with the
 package functions, from raw counts to replication tracks, initiation
@@ -168,7 +177,12 @@ package functions it uses.</p>
 <span></span>
 <span><span class="va">ex</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/scrt_example_data.html">scrt_example_data</a></span><span class="op">(</span><span class="st">"vignette"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">ex</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/table.html" class="external-link">table</a></span><span class="op">(</span>called_G1 <span class="op">=</span> <span class="va">ex</span><span class="op">$</span><span class="va">meta</span><span class="op">$</span><span class="va">is_G1</span><span class="op">)</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] "bins"          "bin_counts"    "g1_windows"    "window_counts" "rna_counts"    "genes"        </span></span>
+<span><span class="co">#&gt; [7] "bulk_rt"       "meta"          "info"</span></span>
+<span><span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/table.html" class="external-link">table</a></span><span class="op">(</span>called_G1 <span class="op">=</span> <span class="va">ex</span><span class="op">$</span><span class="va">meta</span><span class="op">$</span><span class="va">is_G1</span><span class="op">)</span></span>
+<span><span class="co">#&gt; called_G1</span></span>
+<span><span class="co">#&gt; FALSE  TRUE </span></span>
+<span><span class="co">#&gt;   400   100</span></span></code></pre></div>
 <p>All figures share one ggplot2 theme (grey panel, white grid):</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">theme_scrt</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">base_size</span> <span class="op">=</span> <span class="fl">13</span><span class="op">)</span> <span class="op">{</span></span>
@@ -197,13 +211,21 @@ the low-MAPD cells G1.</p>
 <code class="sourceCode R"><span><span class="va">bin_counts</span> <span class="op">&lt;-</span> <span class="fu">Matrix</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/Matrix/man/Matrix.html" class="external-link">Matrix</a></span><span class="op">(</span><span class="va">ex</span><span class="op">$</span><span class="va">bin_counts</span>, sparse <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="va">mapd</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calculate_mapd.html">calculate_mapd</a></span><span class="op">(</span><span class="va">bin_counts</span>, <span class="va">ex</span><span class="op">$</span><span class="va">bins</span>, <span class="va">ex</span><span class="op">$</span><span class="va">meta</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cell_id"</span>, <span class="st">"sample"</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span>
 <span><span class="va">g1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/find_g1_cells.html">find_g1_cells</a></span><span class="op">(</span><span class="va">mapd</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/table.html" class="external-link">table</a></span><span class="op">(</span>G1 <span class="op">=</span> <span class="va">g1</span><span class="op">$</span><span class="va">is_G1</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/table.html" class="external-link">table</a></span><span class="op">(</span>G1 <span class="op">=</span> <span class="va">g1</span><span class="op">$</span><span class="va">is_G1</span><span class="op">)</span></span>
+<span><span class="co">#&gt; G1</span></span>
+<span><span class="co">#&gt; FALSE  TRUE </span></span>
+<span><span class="co">#&gt;   356   144</span></span></code></pre></div>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">g1</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span><span class="va">coverage</span>, <span class="va">scaled_mapd</span>, colour <span class="op">=</span> <span class="va">is_G1</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span>alpha <span class="op">=</span> <span class="fl">0.5</span>, size <span class="op">=</span> <span class="fl">1.2</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html" class="external-link">scale_colour_manual</a></span><span class="op">(</span>values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>`TRUE` <span class="op">=</span> <span class="va">col_g1</span>, `FALSE` <span class="op">=</span> <span class="va">col_s</span><span class="op">)</span>, name <span class="op">=</span> <span class="st">"is_G1"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="st">"Coverage"</span>, y <span class="op">=</span> <span class="st">"Scaled MAPD"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">theme_scrt</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<div class="figure" style="text-align: center">
+<img src="figures-mapd-plot-1.png" alt="plot of chunk mapd-plot" width="80%"><p class="caption">
+plot of chunk mapd-plot
+</p>
+</div>
 </div>
 <div class="section level2">
 <h2 id="replication-states-and-qc">2. Replication states and QC<a class="anchor" aria-label="anchor" href="#replication-states-and-qc"></a>
@@ -250,10 +272,16 @@ This is the slowest step of the vignette.</p>
 <span>  <span class="op">}</span></span>
 <span><span class="op">}</span></span>
 <span><span class="fu">gridExtra_free</span><span class="op">(</span><span class="va">p1</span>, <span class="va">p2</span><span class="op">)</span></span></code></pre></div>
+<div class="figure" style="text-align: center">
+<img src="figures-qc-tables-1.png" alt="plot of chunk qc-tables" width="100%"><p class="caption">
+plot of chunk qc-tables
+</p>
+</div>
 <p>From here on, “S cells” are the cells called non-G1 that pass QC.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">s_cells</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/row_colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">md</span><span class="op">)</span><span class="op">[</span><span class="op">!</span><span class="va">md</span><span class="op">$</span><span class="va">is_G1</span> <span class="op">&amp;</span> <span class="va">md</span><span class="op">$</span><span class="va">pass_qc</span> <span class="op">&amp;</span> <span class="fu"><a href="https://rdrr.io/r/base/is.finite.html" class="external-link">is.finite</a></span><span class="op">(</span><span class="va">md</span><span class="op">$</span><span class="va">rep_percent</span><span class="op">)</span><span class="op">]</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">s_cells</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 300</span></span>
 <span><span class="va">states</span> <span class="op">&lt;-</span> <span class="va">res_rp</span><span class="op">$</span><span class="va">genobins_rep_states_filtered</span><span class="op">[</span>, <span class="va">s_cells</span>, drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">]</span></span>
 <span><span class="va">md_s</span> <span class="op">&lt;-</span> <span class="va">md</span><span class="op">[</span><span class="va">s_cells</span>, , drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">]</span></span></code></pre></div>
 </div>
@@ -269,6 +297,11 @@ This is the slowest step of the vignette.</p>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="st">"Replication percentage"</span>, y <span class="op">=</span> <span class="st">"Density"</span>,</span>
 <span>       title <span class="op">=</span> <span class="st">"Replication percentage per cell"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">theme_scrt</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<div class="figure" style="text-align: center">
+<img src="figures-rep-percent-plot-1.png" alt="plot of chunk rep-percent-plot" width="80%"><p class="caption">
+plot of chunk rep-percent-plot
+</p>
+</div>
 </div>
 <div class="section level2">
 <h2 id="pseudobulk-replication-timing-vs-bulk-repli-seq">4. Pseudobulk replication timing vs bulk Repli-seq<a class="anchor" aria-label="anchor" href="#pseudobulk-replication-timing-vs-bulk-repli-seq"></a>
@@ -282,6 +315,8 @@ comparing them.</p>
 <code class="sourceCode R"><span><span class="va">rt_meta</span> <span class="op">&lt;-</span> <span class="va">md</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cell_id"</span>, <span class="st">"sample"</span>, <span class="st">"is_G1"</span>, <span class="st">"rep_percent"</span>, <span class="st">"pass_qc"</span><span class="op">)</span><span class="op">]</span></span>
 <span><span class="va">rt_counts</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/aggregate_pseudobulk_s_g1_counts.html">aggregate_pseudobulk_s_g1_counts</a></span><span class="op">(</span><span class="va">bin_counts</span>, <span class="va">rt_meta</span>, <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">ex</span><span class="op">$</span><span class="va">bins</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">rt_counts</span>, <span class="st">"selected_cells"</span><span class="op">)</span></span>
+<span><span class="co">#&gt;   sample n_s n_g1</span></span>
+<span><span class="co">#&gt; 1      1 300  144</span></span>
 <span><span class="va">rt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calculate_pseudobulk_rt_g1_ratio.html">calculate_pseudobulk_rt_g1_ratio</a></span><span class="op">(</span><span class="va">rt_counts</span>, <span class="va">ex</span><span class="op">$</span><span class="va">bins</span><span class="op">)</span></span></code></pre></div>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">windows</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/GenomicRanges/man/tileGenome.html" class="external-link">tileGenome</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/Seqinfo/man/seqinfo.html" class="external-link">seqinfo</a></span><span class="op">(</span><span class="va">ex</span><span class="op">$</span><span class="va">bins</span><span class="op">)</span>, tilewidth <span class="op">=</span> <span class="fl">50000L</span>,</span>
@@ -305,6 +340,11 @@ comparing them.</p>
 <span>       subtitle <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"S/G1 ratio, 50 kb windows, Pearson r = %.3f"</span>, <span class="va">r</span><span class="op">)</span>,</span>
 <span>       x <span class="op">=</span> <span class="st">"Bulk RT (Loess smoothed)"</span>, y <span class="op">=</span> <span class="st">"Pseudobulk RT (z-score)"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_bw</a></span><span class="op">(</span>base_size <span class="op">=</span> <span class="fl">13</span><span class="op">)</span></span></code></pre></div>
+<div class="figure" style="text-align: center">
+<img src="figures-pseudobulk-plot-1.png" alt="plot of chunk pseudobulk-plot" width="80%"><p class="caption">
+plot of chunk pseudobulk-plot
+</p>
+</div>
 </div>
 <div class="section level2">
 <h2 id="single-cell-replication-states">5. Single-cell replication states<a class="anchor" aria-label="anchor" href="#single-cell-replication-states"></a>
@@ -332,6 +372,11 @@ late-replicating cells.</p>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="st">"chr4 coordinate (Mb)"</span>, y <span class="op">=</span> <span class="st">"% Replicated"</span>, title <span class="op">=</span> <span class="st">"chr4:1-50 Mb"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_bw</a></span><span class="op">(</span>base_size <span class="op">=</span> <span class="fl">13</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span>plot.title <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_text</a></span><span class="op">(</span>hjust <span class="op">=</span> <span class="fl">0.5</span>, face <span class="op">=</span> <span class="st">"bold"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<div class="figure" style="text-align: center">
+<img src="figures-states-plot-1.png" alt="plot of chunk states-plot" width="100%"><p class="caption">
+plot of chunk states-plot
+</p>
+</div>
 </div>
 <div class="section level2">
 <h2 id="umap-of-replication-states">6. UMAP of replication states<a class="anchor" aria-label="anchor" href="#umap-of-replication-states"></a>
@@ -366,6 +411,11 @@ with UMAP; bins without a call count as unreplicated.</p>
 <span>                        oob <span class="op">=</span> <span class="fu">scales</span><span class="fu">::</span><span class="va"><a href="https://scales.r-lib.org/reference/oob.html" class="external-link">squish</a></span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Coloured by relative RNA depth"</span><span class="op">)</span> <span class="op">+</span> <span class="fu">theme_scrt</span><span class="op">(</span><span class="fl">11</span><span class="op">)</span></span>
 <span><span class="fu">gridExtra_free</span><span class="op">(</span><span class="va">p_rep</span>, <span class="va">p_rna</span><span class="op">)</span></span></code></pre></div>
+<div class="figure" style="text-align: center">
+<img src="figures-umap-plot-1.png" alt="plot of chunk umap-plot" width="100%"><p class="caption">
+plot of chunk umap-plot
+</p>
+</div>
 <p>The RNA depth of a cell (its RNA counts over the mean of the S cells)
 rises along the same trajectory: cells late in S phase have more
 RNA.</p>
@@ -387,8 +437,14 @@ point.</p>
 <span><span class="va">track_lengths</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calc_rep_track_lengths.html">calc_rep_track_lengths</a></span><span class="op">(</span><span class="va">tracks</span><span class="op">)</span></span>
 <span><span class="va">median_lengths</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/summarize_track_lengths.html">summarize_track_lengths</a></span><span class="op">(</span><span class="va">track_lengths</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">median_lengths</span>, <span class="fl">3</span><span class="op">)</span></span>
+<span><span class="co">#&gt;                    cell_id median_length log_length rep_percent</span></span>
+<span><span class="co">#&gt; 1 scRT1-AAAGCACCAACATAAG-1       4740000      15.37       86.86</span></span>
+<span><span class="co">#&gt; 2 scRT1-AAAGCCGCAAACGGGC-1       1360000      14.12       61.49</span></span>
+<span><span class="co">#&gt; 3 scRT1-AAAGGACGTCACCTAT-1        600000      13.30       16.16</span></span>
 <span><span class="va">velocity</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_track_velocity_linear.html">fit_track_velocity_linear</a></span><span class="op">(</span><span class="va">median_lengths</span>, n_grid <span class="op">=</span> <span class="fl">200</span>, fit_seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
-<span><span class="va">velocity</span><span class="op">$</span><span class="va">validation_metrics</span></span></code></pre></div>
+<span><span class="va">velocity</span><span class="op">$</span><span class="va">validation_metrics</span></span>
+<span><span class="co">#&gt;     rmse pseudo_r2 correlation</span></span>
+<span><span class="co">#&gt; 1 0.2089    0.8774      0.9389</span></span></code></pre></div>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">p_len</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">median_lengths</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span><span class="va">rep_percent</span>, <span class="va">median_length</span> <span class="op">/</span> <span class="fl">1e6</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span>colour <span class="op">=</span> <span class="va">col_s</span>, alpha <span class="op">=</span> <span class="fl">0.6</span>, size <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="op">+</span></span>
@@ -402,6 +458,11 @@ point.</p>
 <span>       y <span class="op">=</span> <span class="st">"Track-length velocity (kb / percentage point)"</span>,</span>
 <span>       title <span class="op">=</span> <span class="st">"Growth rate of the track length"</span><span class="op">)</span> <span class="op">+</span> <span class="fu">theme_scrt</span><span class="op">(</span><span class="fl">11</span><span class="op">)</span></span>
 <span><span class="fu">gridExtra_free</span><span class="op">(</span><span class="va">p_len</span>, <span class="va">p_vel</span><span class="op">)</span></span></code></pre></div>
+<div class="figure" style="text-align: center">
+<img src="figures-tracks-plot-1.png" alt="plot of chunk tracks-plot" width="100%"><p class="caption">
+plot of chunk tracks-plot
+</p>
+</div>
 </div>
 <div class="section level2">
 <h2 id="initiation-zones">8. Initiation zones<a class="anchor" aria-label="anchor" href="#initiation-zones"></a>
@@ -416,13 +477,17 @@ cells around these seeds. An IZ must be supported by tracks of at least
 <code class="sourceCode R"><span><span class="va">centers</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/count_track_centers.html">count_track_centers</a></span><span class="op">(</span><span class="va">tracks</span>, <span class="va">ex</span><span class="op">$</span><span class="va">bins</span>,</span>
 <span>                               track_filter <span class="op">=</span> <span class="op">(</span><span class="va">num_bins</span> <span class="op">&lt;=</span> <span class="fl">50</span><span class="op">)</span> <span class="op">&amp;</span> <span class="op">(</span><span class="va">flag</span> <span class="op">==</span> <span class="fl">0</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/table.html" class="external-link">table</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/Extremes.html" class="external-link">pmin</a></span><span class="op">(</span><span class="va">centers</span><span class="op">$</span><span class="va">score</span>, <span class="fl">5</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;     0     1     2     3     4     5 </span></span>
+<span><span class="co">#&gt; 97190 15323  5084  2366  1274  1911</span></span>
 <span><span class="va">seeds</span> <span class="op">&lt;-</span> <span class="va">centers</span><span class="op">[</span><span class="va">centers</span><span class="op">$</span><span class="va">score</span> <span class="op">&gt;=</span> <span class="fl">3</span><span class="op">]</span></span>
 <span><span class="va">res_iz</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/define_initiation_zones.html">define_initiation_zones</a></span><span class="op">(</span></span>
 <span>  <span class="va">tracks</span>, <span class="va">seeds</span>, max_track_length <span class="op">=</span> <span class="st">"1Mb"</span>, min_usage <span class="op">=</span> <span class="fl">3L</span>, bin_size <span class="op">=</span> <span class="st">"20Kb"</span>,</span>
 <span>  BPPARAM <span class="op">=</span> <span class="fu">BiocParallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/BiocParallel/man/MulticoreParam-class.html" class="external-link">MulticoreParam</a></span><span class="op">(</span><span class="va">n_workers</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span><span class="va">iz</span> <span class="op">&lt;-</span> <span class="va">res_iz</span><span class="op">$</span><span class="va">izones</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">iz</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">iz</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 764</span></span></code></pre></div>
 <p>For each IZ we report its width, the distance to the next IZ on the
 same chromosome, and its replication timing (the mean pseudobulk RT of
 section 4 over the IZ). With about 300 S cells only the more frequently
@@ -437,7 +502,9 @@ widths and timing are comparable.</p>
 <span><span class="va">iz</span><span class="op">$</span><span class="va">rt</span> <span class="op">&lt;-</span> <span class="cn">NA_real_</span></span>
 <span><span class="va">agg</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/tapply.html" class="external-link">tapply</a></span><span class="op">(</span><span class="va">rt</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/is.finite.html" class="external-link">is.finite</a></span><span class="op">(</span><span class="va">rt</span><span class="op">$</span><span class="va">score</span><span class="op">)</span><span class="op">]</span><span class="op">$</span><span class="va">score</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/pkg/S4Vectors/man/Hits-class.html" class="external-link">subjectHits</a></span><span class="op">(</span><span class="va">hits</span><span class="op">)</span><span class="op">]</span>, <span class="fu"><a href="https://rdrr.io/pkg/S4Vectors/man/Hits-class.html" class="external-link">queryHits</a></span><span class="op">(</span><span class="va">hits</span><span class="op">)</span>, <span class="va">mean</span><span class="op">)</span></span>
 <span><span class="va">iz</span><span class="op">$</span><span class="va">rt</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">as.integer</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">agg</span><span class="op">)</span><span class="op">)</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">agg</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/start.html" class="external-link">width</a></span><span class="op">(</span><span class="va">iz</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/start.html" class="external-link">width</a></span><span class="op">(</span><span class="va">iz</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt;    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. </span></span>
+<span><span class="co">#&gt;   20000   81000  110000  113502  141000  262500</span></span></code></pre></div>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">iz_hist</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">df</span>, <span class="va">x</span>, <span class="va">label</span>, <span class="va">xlab</span>, <span class="va">log_x</span> <span class="op">=</span> <span class="cn">TRUE</span>, <span class="va">density</span> <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">med</span> <span class="op">&lt;-</span> <span class="fu">stats</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/stats/median.html" class="external-link">median</a></span><span class="op">(</span><span class="va">df</span><span class="op">[[</span><span class="va">x</span><span class="op">]</span><span class="op">]</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
@@ -462,6 +529,11 @@ widths and timing are comparable.</p>
 <span><span class="fu">grid</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/grid/viewports.html" class="external-link">pushViewport</a></span><span class="op">(</span><span class="fu">grid</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/grid/viewport.html" class="external-link">viewport</a></span><span class="op">(</span>layout <span class="op">=</span> <span class="fu">grid</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/grid/grid.layout.html" class="external-link">grid.layout</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">3</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="fl">3</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">p_w</span>, <span class="va">p_d</span>, <span class="va">p_rt</span><span class="op">)</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span>,</span>
 <span>                     vp <span class="op">=</span> <span class="fu">grid</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/grid/viewport.html" class="external-link">viewport</a></span><span class="op">(</span>layout.pos.row <span class="op">=</span> <span class="fl">1</span>, layout.pos.col <span class="op">=</span> <span class="va">i</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<div class="figure" style="text-align: center">
+<img src="figures-iz-plot-1.png" alt="plot of chunk iz-plot" width="100%"><p class="caption">
+plot of chunk iz-plot
+</p>
+</div>
 </div>
 <div class="section level2">
 <h2 id="gene-replication-vs-gene-expression">9. Gene replication vs gene expression<a class="anchor" aria-label="anchor" href="#gene-replication-vs-gene-expression"></a>
@@ -482,7 +554,10 @@ early to late replicating.</p>
 <span><span class="va">gene_tempo</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rep_tempo.html">rep_tempo</a></span><span class="op">(</span><span class="va">states</span>, <span class="va">gene_gr</span>, meta_data <span class="op">=</span> <span class="va">md_s</span>, nbin_rep <span class="op">=</span> <span class="va">nbin</span><span class="op">)</span></span>
 <span><span class="va">gene_fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_rep_tempo.html">fit_rep_tempo</a></span><span class="op">(</span><span class="va">gene_tempo</span>, model_type <span class="op">=</span> <span class="st">"sslogis"</span>,</span>
 <span>                          BPPARAM <span class="op">=</span> <span class="fu">BiocParallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/BiocParallel/man/MulticoreParam-class.html" class="external-link">MulticoreParam</a></span><span class="op">(</span><span class="va">n_workers</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">gene_fit</span><span class="op">$</span><span class="va">fit_status</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">gene_fit</span><span class="op">$</span><span class="va">fit_status</span><span class="op">)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;      curve_qc_flag         fit_failed            no_data                 ok partial_thresholds </span></span>
+<span><span class="co">#&gt;                459                458                483               1238               1241</span></span></code></pre></div>
 <p><code><a href="../reference/gex_tempo.html">gex_tempo()</a></code> bins the same cells in the same way and
 summarizes the expression of each gene per bin; with
 <code>method = "sc2p"</code> it separates the fraction of cells
@@ -491,10 +566,11 @@ cells (phase II).</p>
 <div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">gex</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/warning.html" class="external-link">suppressWarnings</a></span><span class="op">(</span><span class="fu"><a href="../reference/gex_tempo.html">gex_tempo</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="va">rna</span><span class="op">[</span><span class="va">genes</span><span class="op">$</span><span class="va">gene</span>, <span class="op">]</span><span class="op">)</span>, <span class="va">md_s</span>,</span>
 <span>                                  nbin_rep <span class="op">=</span> <span class="va">nbin</span>, method <span class="op">=</span> <span class="st">"sc2p"</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">gex</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">gex</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] "df_phase_I"  "df_phase_II"</span></span></code></pre></div>
 <p>Both heatmaps use the same gene order (by <code>t50</code>, earliest
-at the top) and z-scores per gene. Replication (left) moves as a front
-through S phase, whereas expression (right) has no such front.</p>
+at the bottom) and z-scores per gene. Replication (left) moves as a
+front through S phase, whereas expression (right) has no such front.</p>
 <div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">rep_bins</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">gene_tempo</span>, <span class="st">"rep_bins"</span><span class="op">)</span>   <span class="co"># progress bins, in % (0-100)</span></span>
 <span><span class="va">filled</span> <span class="op">&lt;-</span> <span class="va">rep_bins</span><span class="op">$</span><span class="va">n_cells</span> <span class="op">&gt;</span> <span class="fl">0</span></span>
@@ -507,7 +583,7 @@ through S phase, whereas expression (right) has no such front.</p>
 <span>  <span class="va">z</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/t.html" class="external-link">t</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/apply.html" class="external-link">apply</a></span><span class="op">(</span><span class="va">mat</span>, <span class="fl">1</span>, <span class="va">zscore_safe</span><span class="op">)</span><span class="op">)</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>progress <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="op">(</span><span class="va">rep_bins</span><span class="op">$</span><span class="va">rep_min</span> <span class="op">+</span> <span class="va">rep_bins</span><span class="op">$</span><span class="va">rep_max</span><span class="op">)</span><span class="op">[</span><span class="va">filled</span><span class="op">]</span> <span class="op">/</span> <span class="fl">2</span>,</span>
 <span>                            each <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">z</span><span class="op">)</span><span class="op">)</span>,</span>
-<span>             gene <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/S4Vectors/man/Vector-class.html" class="external-link">rev</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">z</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>, times <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">z</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>             gene <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">z</span><span class="op">)</span><span class="op">)</span>, times <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">z</span><span class="op">)</span><span class="op">)</span>,  <span class="co"># earliest t50 at the bottom</span></span>
 <span>             z <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/as.vector.html" class="external-link">as.vector</a></span><span class="op">(</span><span class="va">z</span><span class="op">)</span>, panel <span class="op">=</span> <span class="va">title</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
 <span><span class="va">df_heat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/cbind.html" class="external-link">rbind</a></span><span class="op">(</span><span class="fu">heat_long</span><span class="op">(</span><span class="va">gene_tempo</span>, <span class="st">"Gene replication"</span><span class="op">)</span>,</span>
@@ -522,12 +598,55 @@ through S phase, whereas expression (right) has no such front.</p>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="st">"Replication progress of cell (%)"</span>, y <span class="op">=</span> <span class="st">"Genes (ordered by t50)"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_bw</a></span><span class="op">(</span>base_size <span class="op">=</span> <span class="fl">13</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span>strip.text <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_text</a></span><span class="op">(</span>face <span class="op">=</span> <span class="st">"bold"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<div class="figure" style="text-align: center">
+<img src="figures-gene-heatmap-1.png" alt="plot of chunk gene-heatmap" width="100%"><p class="caption">
+plot of chunk gene-heatmap
+</p>
+</div>
 </div>
 <div class="section level2">
 <h2 id="session">Session<a class="anchor" aria-label="anchor" href="#session"></a>
 </h2>
 <div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/sessionInfo.html" class="external-link">sessionInfo</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/sessionInfo.html" class="external-link">sessionInfo</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co">#&gt; R version 4.3.3 (2024-02-29)</span></span>
+<span><span class="co">#&gt; Platform: x86_64-conda-linux-gnu (64-bit)</span></span>
+<span><span class="co">#&gt; Running under: CentOS Linux 7 (Core)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Matrix products: default</span></span>
+<span><span class="co">#&gt; BLAS/LAPACK: /data/hjji/miniconda3/envs/new_sc_envs/lib/libopenblasp-r0.3.27.so;  LAPACK version 3.12.0</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; locale:</span></span>
+<span><span class="co">#&gt;  [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C               LC_TIME=en_US.UTF-8       </span></span>
+<span><span class="co">#&gt;  [4] LC_COLLATE=en_US.UTF-8     LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8   </span></span>
+<span><span class="co">#&gt;  [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                  LC_ADDRESS=C              </span></span>
+<span><span class="co">#&gt; [10] LC_TELEPHONE=C             LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; time zone: Asia/Shanghai</span></span>
+<span><span class="co">#&gt; tzcode source: system (glibc)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; attached base packages:</span></span>
+<span><span class="co">#&gt; [1] stats4    stats     graphics  grDevices utils     datasets  methods   base     </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; other attached packages:</span></span>
+<span><span class="co">#&gt; [1] ggplot2_3.5.1        GenomicRanges_1.54.1 GenomeInfoDb_1.38.1  IRanges_2.36.0      </span></span>
+<span><span class="co">#&gt; [5] S4Vectors_0.40.2     BiocGenerics_0.48.1  scRTtools_0.0.0.9001</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>
+<span><span class="co">#&gt;  [1] utf8_1.2.4              generics_0.1.3          robustbase_0.99-4       bitops_1.0-7           </span></span>
+<span><span class="co">#&gt;  [5] lattice_0.22-6          magrittr_2.0.3          evaluate_0.24.0         grid_4.3.3             </span></span>
+<span><span class="co">#&gt;  [9] Matrix_1.6-5            survival_3.7-0          fansi_1.0.6             viridisLite_0.4.2      </span></span>
+<span><span class="co">#&gt; [13] scales_1.3.0            codetools_0.2-20        cli_3.6.3               rlang_1.1.4            </span></span>
+<span><span class="co">#&gt; [17] XVector_0.42.0          uwot_0.1.16             splines_4.3.3           munsell_0.5.1          </span></span>
+<span><span class="co">#&gt; [21] withr_3.0.1             FNN_1.1.4               tools_4.3.3             parallel_4.3.3         </span></span>
+<span><span class="co">#&gt; [25] MatrixModels_0.5-3      SparseM_1.83            BiocParallel_1.36.0     dplyr_1.1.4            </span></span>
+<span><span class="co">#&gt; [29] colorspace_2.1-1        GenomeInfoDbData_1.2.11 vctrs_0.6.5             R6_2.5.1               </span></span>
+<span><span class="co">#&gt; [33] lifecycle_1.0.4         zlibbioc_1.48.0         MASS_7.3-60             irlba_2.3.5.1          </span></span>
+<span><span class="co">#&gt; [37] pkgconfig_2.0.3         pillar_1.9.0            hexbin_1.28.3           gtable_0.3.5           </span></span>
+<span><span class="co">#&gt; [41] glue_1.7.0              Rcpp_1.0.13             DEoptimR_1.1-4          xfun_0.44              </span></span>
+<span><span class="co">#&gt; [45] tibble_3.2.1            tidyselect_1.2.1        highr_0.11              knitr_1.48             </span></span>
+<span><span class="co">#&gt; [49] farver_2.1.2            labeling_0.4.3          compiler_4.3.3          quantreg_5.98          </span></span>
+<span><span class="co">#&gt; [53] RCurl_1.98-1.14</span></span></code></pre></div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

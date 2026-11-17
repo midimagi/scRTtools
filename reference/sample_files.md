@@ -58,5 +58,5 @@ dir.create(file.path(d, "merge"))
 invisible(file.create(file.path(d, "s1", "meta_data.rds"),
                       file.path(d, "merge", "meta_data.rds")))
 find_sample_file(d, "s1", "meta_data.rds")
-#> [1] "/tmp/RtmpYskZhv/file19397809385b/s1/meta_data.rds"
+#> [1] "/tmp/Rtmp5rJXej/file19377f014bdb/s1/meta_data.rds"
 ```

@@ -1,11 +1,10 @@
 # scRTtools: main figures from a 500-cell example
 
-> **The code of this vignette was not run when this copy was built.** It
-> takes 20-35 minutes (mostly
+> This vignette is precomputed: its code was run when the package
+> sources were prepared, not when the package was built. Running it
+> yourself takes 15-35 minutes (mostly
 > [`assign_replication_states()`](https://midimagi.github.io/scRTtools/reference/assign_replication_states.md)
 > on 500 cells) and needs ggplot2, hexbin, robustbase, irlba and uwot.
-> Build it with `SCRTTOOLS_BUILD_FIGURES=true R CMD build scRTtools`, or
-> knit this file after setting that environment variable.
 
 This vignette recomputes the main figures of a scRT analysis with the
 package functions, from raw counts to replication tracks, initiation
@@ -45,7 +44,12 @@ library(ggplot2)
 
 ex <- scrt_example_data("vignette")
 names(ex)
+#> [1] "bins"          "bin_counts"    "g1_windows"    "window_counts" "rna_counts"    "genes"        
+#> [7] "bulk_rt"       "meta"          "info"
 table(called_G1 = ex$meta$is_G1)
+#> called_G1
+#> FALSE  TRUE 
+#>   400   100
 ```
 
 All figures share one ggplot2 theme (grey panel, white grid):
@@ -83,6 +87,9 @@ bin_counts <- Matrix::Matrix(ex$bin_counts, sparse = TRUE)
 mapd <- calculate_mapd(bin_counts, ex$bins, ex$meta[, c("cell_id", "sample")])
 g1 <- find_g1_cells(mapd, seed = 1)
 table(G1 = g1$is_G1)
+#> G1
+#> FALSE  TRUE 
+#>   356   144
 ```
 
 ``` r
@@ -93,6 +100,10 @@ ggplot(g1, aes(coverage, scaled_mapd, colour = is_G1)) +
   labs(x = "Coverage", y = "Scaled MAPD") +
   theme_scrt()
 ```
+
+![plot of chunk mapd-plot](figures-mapd-plot-1.png)
+
+plot of chunk mapd-plot
 
 ## 2. Replication states and QC
 
@@ -147,12 +158,17 @@ gridExtra_free <- function(...) {   # side by side without extra packages
 gridExtra_free(p1, p2)
 ```
 
+![plot of chunk qc-tables](figures-qc-tables-1.png)
+
+plot of chunk qc-tables
+
 From here on, “S cells” are the cells called non-G1 that pass QC.
 
 ``` r
 
 s_cells <- rownames(md)[!md$is_G1 & md$pass_qc & is.finite(md$rep_percent)]
 length(s_cells)
+#> [1] 300
 states <- res_rp$genobins_rep_states_filtered[, s_cells, drop = FALSE]
 md_s <- md[s_cells, , drop = FALSE]
 ```
@@ -171,6 +187,10 @@ ggplot(md_s, aes(rep_percent)) +
   theme_scrt()
 ```
 
+![plot of chunk rep-percent-plot](figures-rep-percent-plot-1.png)
+
+plot of chunk rep-percent-plot
+
 ## 4. Pseudobulk replication timing vs bulk Repli-seq
 
 Pooling the reads of all S cells and dividing by the pooled G1 reads
@@ -184,6 +204,8 @@ comparing them.
 rt_meta <- md[, c("cell_id", "sample", "is_G1", "rep_percent", "pass_qc")]
 rt_counts <- aggregate_pseudobulk_s_g1_counts(bin_counts, rt_meta, names(ex$bins))
 attr(rt_counts, "selected_cells")
+#>   sample n_s n_g1
+#> 1      1 300  144
 rt <- calculate_pseudobulk_rt_g1_ratio(rt_counts, ex$bins)
 ```
 
@@ -212,6 +234,10 @@ ggplot(df_rt, aes(bulk, pseudo)) +
   theme_bw(base_size = 13)
 ```
 
+![plot of chunk pseudobulk-plot](figures-pseudobulk-plot-1.png)
+
+plot of chunk pseudobulk-plot
+
 ## 5. Single-cell replication states
 
 Each row is one S cell, sorted by `rep_percent`; replicated regions (4
@@ -239,6 +265,10 @@ ggplot(df_states, aes(pos, cell, fill = state)) +
   theme_bw(base_size = 13) +
   theme(plot.title = element_text(hjust = 0.5, face = "bold"))
 ```
+
+![plot of chunk states-plot](figures-states-plot-1.png)
+
+plot of chunk states-plot
 
 ## 6. UMAP of replication states
 
@@ -279,6 +309,10 @@ p_rna <- ggplot(df_umap, aes(UMAP_1, UMAP_2, colour = rna_expr)) +
 gridExtra_free(p_rep, p_rna)
 ```
 
+![plot of chunk umap-plot](figures-umap-plot-1.png)
+
+plot of chunk umap-plot
+
 The RNA depth of a cell (its RNA counts over the mean of the S cells)
 rises along the same trajectory: cells late in S phase have more RNA.
 
@@ -299,8 +333,14 @@ tracks <- define_replication_tracks(states, ex$bins,
 track_lengths <- calc_rep_track_lengths(tracks)
 median_lengths <- summarize_track_lengths(track_lengths)
 head(median_lengths, 3)
+#>                    cell_id median_length log_length rep_percent
+#> 1 scRT1-AAAGCACCAACATAAG-1       4740000      15.37       86.86
+#> 2 scRT1-AAAGCCGCAAACGGGC-1       1360000      14.12       61.49
+#> 3 scRT1-AAAGGACGTCACCTAT-1        600000      13.30       16.16
 velocity <- fit_track_velocity_linear(median_lengths, n_grid = 200, fit_seed = 1)
 velocity$validation_metrics
+#>     rmse pseudo_r2 correlation
+#> 1 0.2089    0.8774      0.9389
 ```
 
 ``` r
@@ -319,6 +359,10 @@ p_vel <- ggplot(velocity$prediction, aes(rep_percent, length_velocity / 1e3)) +
 gridExtra_free(p_len, p_vel)
 ```
 
+![plot of chunk tracks-plot](figures-tracks-plot-1.png)
+
+plot of chunk tracks-plot
+
 ## 8. Initiation zones
 
 Short tracks are centred on the initiation zones (IZs) that fired them.
@@ -333,6 +377,9 @@ supported by tracks of at least `min_usage` cells.
 centers <- count_track_centers(tracks, ex$bins,
                                track_filter = (num_bins <= 50) & (flag == 0))
 table(pmin(centers$score, 5))
+#> 
+#>     0     1     2     3     4     5 
+#> 97190 15323  5084  2366  1274  1911
 seeds <- centers[centers$score >= 3]
 res_iz <- define_initiation_zones(
   tracks, seeds, max_track_length = "1Mb", min_usage = 3L, bin_size = "20Kb",
@@ -340,6 +387,7 @@ res_iz <- define_initiation_zones(
 )
 iz <- res_iz$izones
 length(iz)
+#> [1] 764
 ```
 
 For each IZ we report its width, the distance to the next IZ on the same
@@ -359,6 +407,8 @@ iz$rt <- NA_real_
 agg <- tapply(rt[is.finite(rt$score)]$score[subjectHits(hits)], queryHits(hits), mean)
 iz$rt[as.integer(names(agg))] <- agg
 summary(width(iz))
+#>    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+#>   20000   81000  110000  113502  141000  262500
 ```
 
 ``` r
@@ -388,6 +438,10 @@ for (i in 1:3) print(list(p_w, p_d, p_rt)[[i]],
                      vp = grid::viewport(layout.pos.row = 1, layout.pos.col = i))
 ```
 
+![plot of chunk iz-plot](figures-iz-plot-1.png)
+
+plot of chunk iz-plot
+
 ## 9. Gene replication vs gene expression
 
 For every gene, the S cells are split into bins of replication progress
@@ -412,6 +466,9 @@ gene_tempo <- rep_tempo(states, gene_gr, meta_data = md_s, nbin_rep = nbin)
 gene_fit <- fit_rep_tempo(gene_tempo, model_type = "sslogis",
                           BPPARAM = BiocParallel::MulticoreParam(n_workers))
 table(gene_fit$fit_status)
+#> 
+#>      curve_qc_flag         fit_failed            no_data                 ok partial_thresholds 
+#>                459                458                483               1238               1241
 ```
 
 [`gex_tempo()`](https://midimagi.github.io/scRTtools/reference/gex_tempo.md)
@@ -425,9 +482,10 @@ expressing cells (phase II).
 gex <- suppressWarnings(gex_tempo(as.matrix(rna[genes$gene, ]), md_s,
                                   nbin_rep = nbin, method = "sc2p"))
 names(gex)
+#> [1] "df_phase_I"  "df_phase_II"
 ```
 
-Both heatmaps use the same gene order (by `t50`, earliest at the top)
+Both heatmaps use the same gene order (by `t50`, earliest at the bottom)
 and z-scores per gene. Replication (left) moves as a front through S
 phase, whereas expression (right) has no such front.
 
@@ -444,7 +502,7 @@ heat_long <- function(mat, title) {
   z <- t(apply(mat, 1, zscore_safe))
   data.frame(progress = rep((rep_bins$rep_min + rep_bins$rep_max)[filled] / 2,
                             each = nrow(z)),
-             gene = rep(rev(seq_len(nrow(z))), times = ncol(z)),
+             gene = rep(seq_len(nrow(z)), times = ncol(z)),  # earliest t50 at the bottom
              z = as.vector(z), panel = title)
 }
 df_heat <- rbind(heat_long(gene_tempo, "Gene replication"),
@@ -461,9 +519,51 @@ ggplot(df_heat, aes(progress, gene, fill = z)) +
   theme(strip.text = element_text(face = "bold"))
 ```
 
+![plot of chunk gene-heatmap](figures-gene-heatmap-1.png)
+
+plot of chunk gene-heatmap
+
 ## Session
 
 ``` r
 
 sessionInfo()
+#> R version 4.3.3 (2024-02-29)
+#> Platform: x86_64-conda-linux-gnu (64-bit)
+#> Running under: CentOS Linux 7 (Core)
+#> 
+#> Matrix products: default
+#> BLAS/LAPACK: /data/hjji/miniconda3/envs/new_sc_envs/lib/libopenblasp-r0.3.27.so;  LAPACK version 3.12.0
+#> 
+#> locale:
+#>  [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C               LC_TIME=en_US.UTF-8       
+#>  [4] LC_COLLATE=en_US.UTF-8     LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8   
+#>  [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                  LC_ADDRESS=C              
+#> [10] LC_TELEPHONE=C             LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
+#> 
+#> time zone: Asia/Shanghai
+#> tzcode source: system (glibc)
+#> 
+#> attached base packages:
+#> [1] stats4    stats     graphics  grDevices utils     datasets  methods   base     
+#> 
+#> other attached packages:
+#> [1] ggplot2_3.5.1        GenomicRanges_1.54.1 GenomeInfoDb_1.38.1  IRanges_2.36.0      
+#> [5] S4Vectors_0.40.2     BiocGenerics_0.48.1  scRTtools_0.0.0.9001
+#> 
+#> loaded via a namespace (and not attached):
+#>  [1] utf8_1.2.4              generics_0.1.3          robustbase_0.99-4       bitops_1.0-7           
+#>  [5] lattice_0.22-6          magrittr_2.0.3          evaluate_0.24.0         grid_4.3.3             
+#>  [9] Matrix_1.6-5            survival_3.7-0          fansi_1.0.6             viridisLite_0.4.2      
+#> [13] scales_1.3.0            codetools_0.2-20        cli_3.6.3               rlang_1.1.4            
+#> [17] XVector_0.42.0          uwot_0.1.16             splines_4.3.3           munsell_0.5.1          
+#> [21] withr_3.0.1             FNN_1.1.4               tools_4.3.3             parallel_4.3.3         
+#> [25] MatrixModels_0.5-3      SparseM_1.83            BiocParallel_1.36.0     dplyr_1.1.4            
+#> [29] colorspace_2.1-1        GenomeInfoDbData_1.2.11 vctrs_0.6.5             R6_2.5.1               
+#> [33] lifecycle_1.0.4         zlibbioc_1.48.0         MASS_7.3-60             irlba_2.3.5.1          
+#> [37] pkgconfig_2.0.3         pillar_1.9.0            hexbin_1.28.3           gtable_0.3.5           
+#> [41] glue_1.7.0              Rcpp_1.0.13             DEoptimR_1.1-4          xfun_0.44              
+#> [45] tibble_3.2.1            tidyselect_1.2.1        highr_0.11              knitr_1.48             
+#> [49] farver_2.1.2            labeling_0.4.3          compiler_4.3.3          quantreg_5.98          
+#> [53] RCurl_1.98-1.14
 ```

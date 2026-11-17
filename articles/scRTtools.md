@@ -314,14 +314,14 @@ rt[1:3]
 #> GRanges object with 3 ranges and 1 metadata column:
 #>                        seqnames          ranges strand |     score
 #>                           <Rle>       <IRanges>  <Rle> | <numeric>
-#>   chr1-3000001-3020000     chr1 3000001-3020000      * | -0.685879
-#>   chr1-3020001-3040000     chr1 3020001-3040000      * | -0.697088
-#>   chr1-3040001-3060000     chr1 3040001-3060000      * | -0.703041
+#>   chr1-3000001-3020000     chr1 3000001-3020000      * | -0.685876
+#>   chr1-3020001-3040000     chr1 3020001-3040000      * | -0.697085
+#>   chr1-3040001-3060000     chr1 3040001-3060000      * | -0.703038
 #>   -------
 #>   seqinfo: 19 sequences from mm10 genome
 summary(rt$score)
 #>    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-#> -3.2726 -0.6919 -0.1569 -0.0365  0.4389  4.9991
+#> -3.2726 -0.6919 -0.1569 -0.0365  0.4389  4.9990
 rt_peaks <- find_rt_peaks(rt)
 length(rt_peaks)
 #> [1] 2080
@@ -329,14 +329,14 @@ rt_peaks[1:3]
 #> GRanges object with 3 ranges and 5 metadata columns:
 #>                        seqnames          ranges strand |     score  RT_value local_median
 #>                           <Rle>       <IRanges>  <Rle> | <numeric> <numeric>    <numeric>
-#>   chr1-4860001-4880000     chr1 4860001-4880000      * |  1.452566  1.452566     1.225637
-#>   chr1-7140001-7160000     chr1 7140001-7160000      * |  0.853135  0.853135     0.743260
-#>   chr1-8540001-8560000     chr1 8540001-8560000      * |  0.456936  0.456936     0.209519
+#>   chr1-4860001-4880000     chr1 4860001-4880000      * |  1.452559  1.452559     1.225631
+#>   chr1-7140001-7160000     chr1 7140001-7160000      * |  0.853131  0.853131     0.743256
+#>   chr1-8540001-8560000     chr1 8540001-8560000      * |  0.456934  0.456934     0.209518
 #>                        local_delta plateau_size
 #>                          <numeric>    <integer>
-#>   chr1-4860001-4880000    0.226929            1
+#>   chr1-4860001-4880000    0.226927            1
 #>   chr1-7140001-7160000    0.109875            1
-#>   chr1-8540001-8560000    0.247417            1
+#>   chr1-8540001-8560000    0.247416            1
 #>   -------
 #>   seqinfo: 19 sequences from mm10 genome
 ```
@@ -368,14 +368,14 @@ centers[centers$score > 0][1:3]
 #> GRanges object with 3 ranges and 5 metadata columns:
 #>                          seqnames            ranges strand |     score  RT_value local_median
 #>                             <Rle>         <IRanges>  <Rle> | <integer> <numeric>    <numeric>
-#>   chr1-13660001-13680000     chr1 13660001-13680000      * |         1  0.364770     0.269727
-#>   chr1-15780001-15800000     chr1 15780001-15800000      * |         2  0.826600     0.606109
-#>   chr1-20860001-20880000     chr1 20860001-20880000      * |         1  0.670064     0.490125
+#>   chr1-13660001-13680000     chr1 13660001-13680000      * |         1  0.364768     0.269725
+#>   chr1-15780001-15800000     chr1 15780001-15800000      * |         2  0.826596     0.606107
+#>   chr1-20860001-20880000     chr1 20860001-20880000      * |         1  0.670061     0.490123
 #>                          local_delta plateau_size
 #>                            <numeric>    <integer>
-#>   chr1-13660001-13680000   0.0950432            1
-#>   chr1-15780001-15800000   0.2204906            1
-#>   chr1-20860001-20880000   0.1799389            1
+#>   chr1-13660001-13680000   0.0950428            1
+#>   chr1-15780001-15800000   0.2204895            1
+#>   chr1-20860001-20880000   0.1799381            1
 #>   -------
 #>   seqinfo: 19 sequences from mm10 genome
 ```
@@ -551,9 +551,9 @@ head(tempo_fit[, c("region_id", "t25", "t50", "t75", "max_slope", "r_squared",
 table(tempo_fit$fit_status)
 #> 
 #>  constant_response      curve_qc_flag         fit_failed            no_data                 ok 
-#>                  2                132                 41                  1                109 
+#>                  2                132                 41                  1                110 
 #> partial_thresholds 
-#>                164
+#>                163
 ```
 
 The fitted curves of six zones with `fit_status == "ok"`, chosen across
