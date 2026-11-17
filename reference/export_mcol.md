@@ -43,4 +43,5 @@ if (requireNamespace("rtracklayer", quietly = TRUE)) {
   f <- tempfile(fileext = ".bw")
   export_mcol(GenomicRanges::GRangesList(chr1 = gr), "val", f, si)
 }
+#> Warning: replacing previous import ‘S4Arrays::makeNindexFromArrayViewport’ by ‘DelayedArray::makeNindexFromArrayViewport’ when loading ‘SummarizedExperiment’
 ```

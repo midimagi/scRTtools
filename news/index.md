@@ -1,5 +1,14 @@
 # Changelog
 
+## scRTtools 0.0.0.9001
+
+- New vignette `figures` and 500-cell vignette data downloaded from a
+  GitHub release (see below).
+- [`scrt_example_data()`](https://midimagi.github.io/scRTtools/reference/scrt_example_data.md)
+  loads the GenomicRanges namespace, so the restored `GRanges` work
+  (e.g. [`names()`](https://rdrr.io/r/base/names.html)) in a fresh
+  session.
+
 ## scRTtools 0.0.0.9000
 
 First development version: 111 exported functions for single-cell DNA
@@ -78,8 +87,21 @@ included.
   [`make_bin()`](https://midimagi.github.io/scRTtools/reference/make_bin.md)).
 - Example data:
   [`scrt_example_data()`](https://midimagi.github.io/scRTtools/reference/scrt_example_data.md)
-  (sample scRT1, chr1-chr19, 40 cells).
+  (sample scRT1, chr1-chr19, 40 cells); `scrt_example_data("vignette")`
+  loads a larger set of 500 cells (not QC filtered, with RNA and a bulk
+  Repli-seq RT track), built by `data-raw/make_vignette_data.R`. These
+  data (49 MB) are downloaded on first use from the `data-v1` GitHub
+  release, checked by MD5 and cached in
+  `tools::R_user_dir("scRTtools", "cache")`.
 - Vignette `scRTtools`: the workflow end to end on the example data.
+- Vignette `figures`: the main figures (MAPD, QC, rep_percent,
+  pseudobulk vs bulk RT, single-cell states, UMAP, track-length
+  velocity, initiation zones, gene replication vs expression) recomputed
+  with ggplot2 on the 500-cell data. It takes about 20-35 minutes to
+  build, most of it in
+  [`assign_replication_states()`](https://midimagi.github.io/scRTtools/reference/assign_replication_states.md),
+  so its code only runs when the environment variable
+  `SCRTTOOLS_BUILD_FIGURES=true` is set (e.g. before a release).
 
 ### Design
 
@@ -90,6 +112,22 @@ included.
 - Functions return objects and write files only when that is their
   purpose (`export_pseudobulk_g1_ratio(file = )`,
   [`downsample_fragments()`](https://midimagi.github.io/scRTtools/reference/downsample_fragments.md)).
+- Count data are passed in as objects:
+  [`aggregate_pseudobulk_s_g1_counts()`](https://midimagi.github.io/scRTtools/reference/aggregate_pseudobulk_s_g1_counts.md)
+  and
+  [`export_pseudobulk_g1_ratio()`](https://midimagi.github.io/scRTtools/reference/export_pseudobulk_g1_ratio.md)
+  take a sparse matrix or a named list of per-sample matrices (no file
+  reading, no `cache_file`);
+  [`export_pseudobulk_g1_ratio()`](https://midimagi.github.io/scRTtools/reference/export_pseudobulk_g1_ratio.md)
+  takes `genome_granges` only as a `GRanges`. Likewise
+  [`load_and_merge_rna_counts()`](https://midimagi.github.io/scRTtools/reference/load_and_merge_rna_counts.md)
+  takes a named list of Seurat objects or count matrices,
+  [`prepare_metadata()`](https://midimagi.github.io/scRTtools/reference/prepare_metadata.md)
+  takes `meta_data` only as a `data.frame`, and
+  [`calculate_OE_ratio()`](https://midimagi.github.io/scRTtools/reference/calculate_OE_ratio.md)
+  takes `coords_list` as a named list or a `function(chr)` loader. No
+  function calls [`readRDS()`](https://rdrr.io/r/base/readRDS.html) on
+  its inputs.
 - Progress messages go through `verbose`, which defaults to `FALSE`.
 - Functions that draw random numbers take a `seed` argument and leave
   the caller’s random number state untouched.

@@ -40,8 +40,11 @@ calculate_OE_ratio(
 
 - coords_list:
 
-  Named character vector of RDS file paths, one per chromosome; each RDS
-  holds a list of 401 numeric vectors of genome positions per GC bin.
+  Genome positions per GC bin, either a named list (one element per
+  chromosome, each a list of 401 numeric vectors) or a function taking a
+  chromosome name and returning that list. The function form keeps only
+  one chromosome in memory, e.g.
+  `function(chr) readRDS(coords_files[[chr]])`.
 
 - gc_bins_use:
 

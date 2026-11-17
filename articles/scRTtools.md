@@ -949,7 +949,7 @@ RNA counts per condition with `AggregateExpression()` and scales each
 condition to counts per 10,000. The per-cell CP10K pseudobulk of S and
 G1 cells used for replication-coupled expression is
 [`aggregate_pseudobulk_s_g1_counts()`](https://midimagi.github.io/scRTtools/reference/aggregate_pseudobulk_s_g1_counts.md),
-which reads the count files directly and needs no Seurat object.
+which takes the bin count matrices and needs no Seurat object.
 
 ``` r
 
@@ -988,11 +988,11 @@ sessionInfo()
 #> 
 #> other attached packages:
 #> [1] GenomicRanges_1.64.0 Seqinfo_1.2.0        IRanges_2.46.0       S4Vectors_0.50.3    
-#> [5] BiocGenerics_0.58.1  generics_0.1.4       scRTtools_0.0.0.9000
+#> [5] BiocGenerics_0.58.1  generics_0.1.4       scRTtools_0.0.0.9001
 #> 
 #> loaded via a namespace (and not attached):
 #>  [1] Matrix_1.7-6        jsonlite_2.0.0      compiler_4.6.2      Rcpp_1.1.2         
-#>  [5] parallel_4.6.2      jquerylib_0.1.4     splines_4.6.2       systemfonts_1.3.2  
+#>  [5] parallel_4.6.2      jquerylib_0.1.4     splines_4.6.2       systemfonts_1.3.3  
 #>  [9] textshaping_1.0.5   BiocParallel_1.46.0 yaml_2.3.12         fastmap_1.2.0      
 #> [13] lattice_0.23-1      R6_2.6.1            GenomeInfoDb_1.48.0 knitr_1.52         
 #> [17] desc_1.4.3          bslib_0.12.0        rlang_1.3.0         cachem_1.1.0       

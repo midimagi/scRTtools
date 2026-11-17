@@ -12,7 +12,7 @@ given.
 
 ``` r
 export_pseudobulk_g1_ratio(
-  genobins_files,
+  genobins,
   meta_data,
   genome_granges,
   file = NULL,
@@ -22,10 +22,10 @@ export_pseudobulk_g1_ratio(
 
 ## Arguments
 
-- genobins_files:
+- genobins:
 
-  Named character vector of RDS files, one sparse bins x cells count
-  matrix per sample; the names are the sample ids.
+  A sparse bins x cells count matrix, or a list of them (one per sample;
+  the names, if any, are the sample ids).
 
 - meta_data:
 
@@ -34,9 +34,9 @@ export_pseudobulk_g1_ratio(
 
 - genome_granges:
 
-  Named `GRanges` with the metadata column `is_mappable`, or the path of
-  an RDS file holding one. Its names are the bin ids. Writing a bigWig
-  needs chromosome lengths in its `seqinfo`.
+  Named `GRanges` with the metadata column `is_mappable`. Its names are
+  the bin ids. Writing a bigWig needs chromosome lengths in its
+  `seqinfo`.
 
 - file:
 
@@ -47,7 +47,7 @@ export_pseudobulk_g1_ratio(
 
   Passed to
   [`aggregate_pseudobulk_s_g1_counts()`](https://midimagi.github.io/scRTtools/reference/aggregate_pseudobulk_s_g1_counts.md),
-  e.g. `cache_file`.
+  e.g. `verbose`.
 
 ## Value
 

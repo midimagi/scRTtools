@@ -3,7 +3,7 @@
 ## Example data
 
 - [`scrt_example_data()`](https://midimagi.github.io/scRTtools/reference/scrt_example_data.md)
-  : Small example dataset
+  : Example datasets
 
 ## Genome bins and read counting
 
@@ -220,7 +220,7 @@ SC2P gene-level phases and expression tempo along S phase.
 ## S-phase progression markers
 
 - [`load_and_merge_rna_counts()`](https://midimagi.github.io/scRTtools/reference/load_and_merge_rna_counts.md)
-  : Load and merge RNA count matrices of several samples
+  : Merge RNA count matrices of several samples
 - [`normalize_sparse_counts()`](https://midimagi.github.io/scRTtools/reference/normalize_sparse_counts.md)
   : Library-size normalise a sparse count matrix
 - [`prepare_metadata()`](https://midimagi.github.io/scRTtools/reference/prepare_metadata.md)

@@ -25,8 +25,7 @@ prepare_metadata(
 - meta_data:
 
   A data.frame of cell metadata with cell IDs as row names and columns
-  `sample`, `is_G1`, `rep_percent`, `pass_qc`; or the path of an `.rds`
-  file holding one.
+  `sample`, `is_G1`, `rep_percent`, `pass_qc`.
 
 - rna_cell_ids:
 

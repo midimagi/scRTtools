@@ -11,7 +11,7 @@ with rtracklayer."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">scRTtools</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9001</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -34,7 +34,7 @@ with rtracklayer."></head><body>
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Export a GRangesList metadata column to BigWig</h1>
-      <small class="dont-index">Source: <a href="https://github.com/midimagi/scRTtools/blob/data-v1/R/read_counts.R" class="external-link"><code>R/read_counts.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/midimagi/scRTtools/blob/main/R/read_counts.R" class="external-link"><code>R/read_counts.R</code></a></small>
       <div class="d-none name"><code>export_mcol.Rd</code></div>
     </div>
 
@@ -86,6 +86,7 @@ exist.</p></dd>
 <span class="r-in"><span>  <span class="va">f</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span>fileext <span class="op">=</span> <span class="st">".bw"</span><span class="op">)</span></span></span>
 <span class="r-in"><span>  <span class="fu">export_mcol</span><span class="op">(</span><span class="fu">GenomicRanges</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/GenomicRanges/man/GRangesList-class.html" class="external-link">GRangesList</a></span><span class="op">(</span>chr1 <span class="op">=</span> <span class="va">gr</span><span class="op">)</span>, <span class="st">"val"</span>, <span class="va">f</span>, <span class="va">si</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span></span></span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>replacing previous import ‘S4Arrays::makeNindexFromArrayViewport’ by ‘DelayedArray::makeNindexFromArrayViewport’ when loading ‘SummarizedExperiment’</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

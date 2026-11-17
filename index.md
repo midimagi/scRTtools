@@ -78,10 +78,19 @@ ex <- scrt_example_data()   # sample scRT1, chr1-chr19, 12 G1 + 28 S-phase cells
 names(ex)
 
 vignette("scRTtools")       # the whole workflow on the example data
+vignette("figures")         # the main figures, recomputed on 500 cells
 ```
 
-The vignette runs the pipeline end to end on the example data and shows
-the object each step returns.
+The `scRTtools` vignette runs the pipeline end to end on the example
+data and shows the object each step returns. The `figures` vignette
+recomputes the main figures (QC, pseudobulk vs bulk RT, single-cell
+states, UMAP, track-length velocity, initiation zones, gene replication
+vs expression) on a larger set of 500 cells. Those data (49 MB) are not
+installed with the package: `scrt_example_data("vignette")` downloads
+them once from the [`data-v1`
+release](https://github.com/midimagi/scRTtools/releases/tag/data-v1) and
+caches them. The vignette takes 20-35 minutes, so its code only runs
+when `SCRTTOOLS_BUILD_FIGURES=true` is set.
 
 ## Overview of the workflow
 

@@ -19,7 +19,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">scRTtools</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9001</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -53,7 +53,7 @@
       <h1>scRTtools: an end-to-end walk-through</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/midimagi/scRTtools/blob/data-v1/vignettes/scRTtools.Rmd" class="external-link"><code>vignettes/scRTtools.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/midimagi/scRTtools/blob/main/vignettes/scRTtools.Rmd" class="external-link"><code>vignettes/scRTtools.Rmd</code></a></small>
       <div class="d-none name"><code>scRTtools.Rmd</code></div>
     </div>
 
@@ -934,8 +934,8 @@ pseudobulk RNA table sums the RNA counts per condition with
 <code>AggregateExpression()</code> and scales each condition to counts
 per 10,000. The per-cell CP10K pseudobulk of S and G1 cells used for
 replication-coupled expression is
-<code><a href="../reference/aggregate_pseudobulk_s_g1_counts.html">aggregate_pseudobulk_s_g1_counts()</a></code>, which reads the count
-files directly and needs no Seurat object.</p>
+<code><a href="../reference/aggregate_pseudobulk_s_g1_counts.html">aggregate_pseudobulk_s_g1_counts()</a></code>, which takes the bin
+count matrices and needs no Seurat object.</p>
 <div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">meta</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">data_dir</span>, <span class="st">"merge/meta_data.rds"</span><span class="op">)</span><span class="op">)</span>   <span class="co"># has `state`</span></span>
 <span><span class="va">wnn</span><span class="op">$</span><span class="va">state</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">meta</span><span class="op">$</span><span class="va">state</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/match.html" class="external-link">match</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/row_colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">wnn</span><span class="op">)</span>, <span class="va">meta</span><span class="op">$</span><span class="va">cell_id</span><span class="op">)</span><span class="op">]</span>,</span>
@@ -971,11 +971,11 @@ files directly and needs no Seurat object.</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; other attached packages:</span></span>
 <span><span class="co">#&gt; [1] GenomicRanges_1.64.0 Seqinfo_1.2.0        IRanges_2.46.0       S4Vectors_0.50.3    </span></span>
-<span><span class="co">#&gt; [5] BiocGenerics_0.58.1  generics_0.1.4       scRTtools_0.0.0.9000</span></span>
+<span><span class="co">#&gt; [5] BiocGenerics_0.58.1  generics_0.1.4       scRTtools_0.0.0.9001</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>
 <span><span class="co">#&gt;  [1] Matrix_1.7-6        jsonlite_2.0.0      compiler_4.6.2      Rcpp_1.1.2         </span></span>
-<span><span class="co">#&gt;  [5] parallel_4.6.2      jquerylib_0.1.4     splines_4.6.2       systemfonts_1.3.2  </span></span>
+<span><span class="co">#&gt;  [5] parallel_4.6.2      jquerylib_0.1.4     splines_4.6.2       systemfonts_1.3.3  </span></span>
 <span><span class="co">#&gt;  [9] textshaping_1.0.5   BiocParallel_1.46.0 yaml_2.3.12         fastmap_1.2.0      </span></span>
 <span><span class="co">#&gt; [13] lattice_0.23-1      R6_2.6.1            GenomeInfoDb_1.48.0 knitr_1.52         </span></span>
 <span><span class="co">#&gt; [17] desc_1.4.3          bslib_0.12.0        rlang_1.3.0         cachem_1.1.0       </span></span>

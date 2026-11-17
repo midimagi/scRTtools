@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">scRTtools</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9001</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -30,9 +30,15 @@
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Changelog</h1>
-      <small>Source: <a href="https://github.com/midimagi/scRTtools/blob/data-v1/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
+      <small>Source: <a href="https://github.com/midimagi/scRTtools/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.0.0.9001" id="scrttools-0009001">scRTtools 0.0.0.9001<a class="anchor" aria-label="anchor" href="#scrttools-0009001"></a></h2>
+<ul><li>New vignette <code>figures</code> and 500-cell vignette data downloaded from a GitHub release (see below).</li>
+<li>
+<code><a href="../reference/scrt_example_data.html">scrt_example_data()</a></code> loads the GenomicRanges namespace, so the restored <code>GRanges</code> work (e.g. <code><a href="https://rdrr.io/r/base/names.html" class="external-link">names()</a></code>) in a fresh session.</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.0.0.9000" id="scrttools-0009000">scRTtools 0.0.0.9000<a class="anchor" aria-label="anchor" href="#scrttools-0009000"></a></h2>
 <p>First development version: 111 exported functions for single-cell DNA replication timing analysis of 10x multiome data. Plotting code is not included.</p>
@@ -48,14 +54,16 @@
 <li>Tempo: <code><a href="../reference/rep_tempo.html">rep_tempo()</a></code>, <code><a href="../reference/fit_rep_tempo.html">fit_rep_tempo()</a></code>, <code><a href="../reference/subset_rep_tempo.html">subset_rep_tempo()</a></code>.</li>
 <li>RNA: <code><a href="../reference/SC2P_gene_unit.html">SC2P_gene_unit()</a></code>, <code><a href="../reference/gex_tempo.html">gex_tempo()</a></code>, and 12 functions for S-phase progression markers.</li>
 <li>Statistics: 11 group comparison functions; HC3 regressions (<code><a href="../reference/fit_ols_hc3.html">fit_ols_hc3()</a></code>, <code><a href="../reference/fit_poisson_hc3.html">fit_poisson_hc3()</a></code>, <code><a href="../reference/combine_two_samples.html">combine_two_samples()</a></code>, <code><a href="../reference/full_rank_model_matrix.html">full_rank_model_matrix()</a></code>, <code><a href="../reference/add_interaction_terms.html">add_interaction_terms()</a></code>, <code><a href="../reference/permute_within_bins.html">permute_within_bins()</a></code>, <code><a href="../reference/make_bin.html">make_bin()</a></code>).</li>
-<li>Example data: <code><a href="../reference/scrt_example_data.html">scrt_example_data()</a></code> (sample scRT1, chr1-chr19, 40 cells).</li>
+<li>Example data: <code><a href="../reference/scrt_example_data.html">scrt_example_data()</a></code> (sample scRT1, chr1-chr19, 40 cells); <code>scrt_example_data("vignette")</code> loads a larger set of 500 cells (not QC filtered, with RNA and a bulk Repli-seq RT track), built by <code>data-raw/make_vignette_data.R</code>. These data (49 MB) are downloaded on first use from the <code>data-v1</code> GitHub release, checked by MD5 and cached in <code>tools::R_user_dir("scRTtools", "cache")</code>.</li>
 <li>Vignette <code>scRTtools</code>: the workflow end to end on the example data.</li>
+<li>Vignette <code>figures</code>: the main figures (MAPD, QC, rep_percent, pseudobulk vs bulk RT, single-cell states, UMAP, track-length velocity, initiation zones, gene replication vs expression) recomputed with ggplot2 on the 500-cell data. It takes about 20-35 minutes to build, most of it in <code><a href="../reference/assign_replication_states.html">assign_replication_states()</a></code>, so its code only runs when the environment variable <code>SCRTTOOLS_BUILD_FIGURES=true</code> is set (e.g. before a release).</li>
 </ul></div>
 <div class="section level3">
 <h3 id="design-0-0-0-9000">Design<a class="anchor" aria-label="anchor" href="#design-0-0-0-9000"></a></h3>
 <ul><li>Parallel functions take <code>BPPARAM</code> (default <code><a href="https://rdrr.io/pkg/BiocParallel/man/SerialParam-class.html" class="external-link">BiocParallel::SerialParam()</a></code>).</li>
 <li>All inputs are explicit arguments; no function reads a config file or a fixed project path.</li>
 <li>Functions return objects and write files only when that is their purpose (<code>export_pseudobulk_g1_ratio(file = )</code>, <code><a href="../reference/downsample_fragments.html">downsample_fragments()</a></code>).</li>
+<li>Count data are passed in as objects: <code><a href="../reference/aggregate_pseudobulk_s_g1_counts.html">aggregate_pseudobulk_s_g1_counts()</a></code> and <code><a href="../reference/export_pseudobulk_g1_ratio.html">export_pseudobulk_g1_ratio()</a></code> take a sparse matrix or a named list of per-sample matrices (no file reading, no <code>cache_file</code>); <code><a href="../reference/export_pseudobulk_g1_ratio.html">export_pseudobulk_g1_ratio()</a></code> takes <code>genome_granges</code> only as a <code>GRanges</code>. Likewise <code><a href="../reference/load_and_merge_rna_counts.html">load_and_merge_rna_counts()</a></code> takes a named list of Seurat objects or count matrices, <code><a href="../reference/prepare_metadata.html">prepare_metadata()</a></code> takes <code>meta_data</code> only as a <code>data.frame</code>, and <code><a href="../reference/calculate_OE_ratio.html">calculate_OE_ratio()</a></code> takes <code>coords_list</code> as a named list or a <code>function(chr)</code> loader. No function calls <code><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS()</a></code> on its inputs.</li>
 <li>Progress messages go through <code>verbose</code>, which defaults to <code>FALSE</code>.</li>
 <li>Functions that draw random numbers take a <code>seed</code> argument and leave the caller’s random number state untouched.</li>
 <li>Results are plain <code>data.frame</code>s (base R and data.table; no tidyverse dependency).</li>

@@ -78,10 +78,19 @@ ex <- scrt_example_data()   # sample scRT1, chr1-chr19, 12 G1 + 28 S-phase cells
 names(ex)
 
 vignette("scRTtools")       # the whole workflow on the example data
+vignette("figures")         # the main figures, recomputed on 500 cells
 ```
 
-The vignette runs the pipeline end to end on the example data and shows
-the object each step returns.
+The `scRTtools` vignette runs the pipeline end to end on the example
+data and shows the object each step returns. The `figures` vignette
+recomputes the main figures (QC, pseudobulk vs bulk RT, single-cell
+states, UMAP, track-length velocity, initiation zones, gene replication
+vs expression) on a larger set of 500 cells. Those data (49 MB) are not
+installed with the package: `scrt_example_data("vignette")` downloads
+them once from the [`data-v1`
+release](https://github.com/midimagi/scRTtools/releases/tag/data-v1) and
+caches them. The vignette takes 20-35 minutes, so its code only runs
+when `SCRTTOOLS_BUILD_FIGURES=true` is set.
 
 ## Overview of the workflow
 
@@ -236,7 +245,7 @@ MIT © 2026 Hongjie Ji. See `LICENSE.md`.
 ## Example data
 
 - [`scrt_example_data()`](https://midimagi.github.io/scRTtools/reference/scrt_example_data.md)
-  : Small example dataset
+  : Example datasets
 
 ## Genome bins and read counting
 
@@ -453,7 +462,7 @@ SC2P gene-level phases and expression tempo along S phase.
 ## S-phase progression markers
 
 - [`load_and_merge_rna_counts()`](https://midimagi.github.io/scRTtools/reference/load_and_merge_rna_counts.md)
-  : Load and merge RNA count matrices of several samples
+  : Merge RNA count matrices of several samples
 - [`normalize_sparse_counts()`](https://midimagi.github.io/scRTtools/reference/normalize_sparse_counts.md)
   : Library-size normalise a sparse count matrix
 - [`prepare_metadata()`](https://midimagi.github.io/scRTtools/reference/prepare_metadata.md)
@@ -547,5 +556,7 @@ SC2P gene-level phases and expression tempo along S phase.
 
 ### All vignettes
 
+- [scRTtools: main figures from a 500-cell
+  example](https://midimagi.github.io/scRTtools/articles/figures.md):
 - [scRTtools: an end-to-end
   walk-through](https://midimagi.github.io/scRTtools/articles/scRTtools.md):

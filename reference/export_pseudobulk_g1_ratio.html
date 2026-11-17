@@ -13,7 +13,7 @@ written only when file is given."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">scRTtools</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9001</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -36,7 +36,7 @@ written only when file is given."></head><body>
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>S/G1 ratio pseudobulk for a group of samples, optionally written to bigWig</h1>
-      <small class="dont-index">Source: <a href="https://github.com/midimagi/scRTtools/blob/data-v1/R/pseudobulk.R" class="external-link"><code>R/pseudobulk.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/midimagi/scRTtools/blob/main/R/pseudobulk.R" class="external-link"><code>R/pseudobulk.R</code></a></small>
       <div class="d-none name"><code>export_pseudobulk_g1_ratio.Rd</code></div>
     </div>
 
@@ -50,7 +50,7 @@ written only when <code>file</code> is given.</p>
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">export_pseudobulk_g1_ratio</span><span class="op">(</span></span>
-<span>  <span class="va">genobins_files</span>,</span>
+<span>  <span class="va">genobins</span>,</span>
 <span>  <span class="va">meta_data</span>,</span>
 <span>  <span class="va">genome_granges</span>,</span>
 <span>  file <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -62,9 +62,9 @@ written only when <code>file</code> is given.</p>
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
 
 
-<dl><dt id="arg-genobins-files">genobins_files<a class="anchor" aria-label="anchor" href="#arg-genobins-files"></a></dt>
-<dd><p>Named character vector of RDS files, one sparse
-bins x cells count matrix per sample; the names are the sample ids.</p></dd>
+<dl><dt id="arg-genobins">genobins<a class="anchor" aria-label="anchor" href="#arg-genobins"></a></dt>
+<dd><p>A sparse bins x cells count matrix, or a list of them (one
+per sample; the names, if any, are the sample ids).</p></dd>
 
 
 <dt id="arg-meta-data">meta_data<a class="anchor" aria-label="anchor" href="#arg-meta-data"></a></dt>
@@ -74,8 +74,8 @@ columns <code>is_G1</code> and <code>pass_qc</code>.</p></dd>
 
 <dt id="arg-genome-granges">genome_granges<a class="anchor" aria-label="anchor" href="#arg-genome-granges"></a></dt>
 <dd><p>Named <code>GRanges</code> with the metadata column
-<code>is_mappable</code>, or the path of an RDS file holding one. Its names are the
-bin ids. Writing a bigWig needs chromosome lengths in its <code>seqinfo</code>.</p></dd>
+<code>is_mappable</code>. Its names are the bin ids. Writing a bigWig needs
+chromosome lengths in its <code>seqinfo</code>.</p></dd>
 
 
 <dt id="arg-file">file<a class="anchor" aria-label="anchor" href="#arg-file"></a></dt>
@@ -85,7 +85,7 @@ that receives the <code>score</code> column (needs the rtracklayer package).</p>
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
 <dd><p>Passed to <code><a href="aggregate_pseudobulk_s_g1_counts.html">aggregate_pseudobulk_s_g1_counts()</a></code>, e.g.
-<code>cache_file</code>.</p></dd>
+<code>verbose</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">
