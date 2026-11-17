@@ -86,8 +86,8 @@ velocity, initiation zones, gene replication vs expression) on a larger set of
 500 cells. Those data (49 MB) are not installed with the package:
 `scrt_example_data("vignette")` downloads them once from the
 [`data-v1` release](https://github.com/midimagi/scRTtools/releases/tag/data-v1)
-and caches them. The vignette takes 20-35 minutes, so its code only runs when
-`SCRTTOOLS_BUILD_FIGURES=true` is set.
+and caches them. The vignette takes 15-35 minutes, so it is precomputed: edit
+`vignettes/figures.Rmd.orig` and re-knit it with `vignettes/precompute.R`.
 
 ## Overview of the workflow
 

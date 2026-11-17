@@ -54,9 +54,10 @@ included.
 * Vignette `figures`: the main figures (MAPD, QC, rep_percent, pseudobulk vs
   bulk RT, single-cell states, UMAP, track-length velocity, initiation zones,
   gene replication vs expression) recomputed with ggplot2 on the 500-cell
-  data. It takes about 20-35 minutes to build, most of it in
-  `assign_replication_states()`, so its code only runs when the environment
-  variable `SCRTTOOLS_BUILD_FIGURES=true` is set (e.g. before a release).
+  data. Its code takes 15-35 minutes, most of it in
+  `assign_replication_states()`, so the vignette is precomputed: the source is
+  `vignettes/figures.Rmd.orig`, and `vignettes/precompute.R` knits it into the
+  committed `figures.Rmd` and `figures-*.png`.
 
 ## Design
 

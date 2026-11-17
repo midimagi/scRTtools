@@ -9,3 +9,5 @@
 ^pkgdown$
 ^\.github$
 ^\.gitignore$
+^vignettes/.*\.orig$
+^vignettes/precompute\.R$
