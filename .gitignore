@@ -16,3 +16,5 @@ Meta/
 scRTtools.Rcheck/
 vignettes/*.html
 vignettes/*.R
+# large data: published as a GitHub release asset, not in git
+inst/extdata/scRT1_vignette.rds

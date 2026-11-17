@@ -51,6 +51,13 @@ test_that("calculate_OE_ratio returns expected counts and GC factors", {
   expect_true(all(c("expected_counts", "oe_ratio") %in% names(mc)))
   expect_equal(length(mc$oe_ratio), length(filt$chr1))
   expect_gt(stats::median(mc$oe_ratio, na.rm = TRUE), 0)
+  # a loader function gives the same result as the in-memory list
+  res_fun <- calculate_OE_ratio(filt, gc$wins_gc, reads,
+                                function(chr) readRDS(gc$coords_files[[chr]]),
+                                gc_bins_use = 81:321)
+  expect_identical(res_fun, res)
+  expect_error(calculate_OE_ratio(filt, gc$wins_gc, reads, gc$coords_files),
+               "named list or a function")
 })
 
 test_that("smooth_windows adds rolling-mean, spline and z-score columns", {
@@ -107,7 +114,7 @@ test_that("read-count functions match the original calculate_rt.R", {
     calculate_OE_ratio(filt, gc$wins_gc, new_cnt$reads_list, gc$coords_list,
                        verbose = FALSE),
     suppressMessages(orig$calculate_OE_ratio(filt, gc$wins_gc, new_cnt$reads_list,
-                                             gc$coords_list))
+                                             gc$coords_files))
   )
 
   for (sa in list(list(spar = 0.1), list(spar = 0.2), list(df = 10))) {

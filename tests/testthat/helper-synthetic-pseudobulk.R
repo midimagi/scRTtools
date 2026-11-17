@@ -50,5 +50,5 @@ synth_pseudobulk_files <- function(x = synth_pseudobulk(), dir = tempfile("pb_")
   files <- c(sA = file.path(dir, "sA.rds"), sB = file.path(dir, "sB.rds"))
   saveRDS(mA, files[["sA"]])
   saveRDS(mB, files[["sB"]])
-  list(files = files, md = md, gr = x$gr, m = x$m, grp = grp)
+  list(files = files, mats = list(sA = mA, sB = mB), md = md, gr = x$gr, m = x$m, grp = grp)
 }

@@ -2,9 +2,22 @@
 % Please edit documentation in R/example_data.R
 \name{scrt_example_data}
 \alias{scrt_example_data}
-\title{Small example dataset}
+\title{Example datasets}
 \usage{
-scrt_example_data()
+scrt_example_data(
+  which = c("small", "vignette"),
+  cache_dir = tools::R_user_dir("scRTtools", "cache"),
+  timeout = 600
+)
+}
+\arguments{
+\item{which}{\code{"small"} or \code{"vignette"}.}
+
+\item{cache_dir}{Directory holding the downloaded vignette data; default
+\code{tools::R_user_dir("scRTtools", "cache")}.}
+
+\item{timeout}{Download timeout in seconds (the \code{timeout} option is raised
+to at least this value during the download).}
 }
 \value{
 A list with
@@ -31,11 +44,27 @@ counts).}
 }
 }
 \description{
-Loads the example shipped with the package: chromosomes 1 to 19 of 40 cells
+Loads one of the two example datasets of the package.
+}
+\details{
+\code{which = "small"} (default): chromosomes 1 to 19 of 40 cells
 (12 G1 and 28 S-phase) of one mouse ESC 10x multiome sample (\code{scRT1},
 mm10, 20 kb bins). It is meant for examples, the vignette and tests, not
 for biological conclusions. The script that built it is
 \code{data-raw/make_example_data.R} in the package sources.
+
+\code{which = "vignette"}: the same sample and bins for 500 cells (100 called
+G1 and 400 called non-G1 by the original analysis, picked evenly along
+their coverage and not filtered on QC, all with RNA), used by the
+\code{figures} vignette. It has the same elements except \code{rep_states}, plus
+\code{bulk_rt}: a \code{GRanges} of the 20 kb bins whose \code{score} is a bulk Repli-seq
+replication timing (Loess smoothed; higher = earlier). Built by
+\code{data-raw/make_vignette_data.R}.
+
+The vignette data (49 MB) are not installed with the package. The first
+call downloads them from the GitHub release of the package (option
+\code{scRTtools.vignette_data_url}, see below), checks their MD5 sum and keeps
+them in \code{cache_dir}; later calls read the cached copy.
 }
 \examples{
 ex <- scrt_example_data()

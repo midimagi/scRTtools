@@ -35,11 +35,11 @@ test_that("calculate_pseudobulk_rt matches the original script", {
 test_that("aggregate_pseudobulk_s_g1_counts sums per-cell CP10K", {
   f <- synth_pseudobulk_files()
   expect_message(
-    cnt <- aggregate_pseudobulk_s_g1_counts(f$files, f$md, names(f$gr), verbose = TRUE),
+    cnt <- aggregate_pseudobulk_s_g1_counts(f$mats, f$md, names(f$gr), verbose = TRUE),
     "sA"
   )
   expect_silent(
-    cnt2 <- aggregate_pseudobulk_s_g1_counts(f$files, f$md, names(f$gr), verbose = FALSE)
+    cnt2 <- aggregate_pseudobulk_s_g1_counts(f$mats, f$md, names(f$gr), verbose = FALSE)
   )
   expect_identical(cnt, cnt2)
   expect_identical(cnt$bin_id, names(f$gr))
@@ -53,36 +53,30 @@ test_that("aggregate_pseudobulk_s_g1_counts sums per-cell CP10K", {
   expect_identical(sum(sel$n_g1), sum(md$is_G1))
   expect_identical(attr(cnt, "normalization"), "cp10k_per_cell_v1")
 
-  # cache: reused when the signature matches, rebuilt when it does not
-  cache <- tempfile(fileext = ".rds")
-  c1 <- aggregate_pseudobulk_s_g1_counts(f$files, f$md, names(f$gr), cache, verbose = FALSE)
-  expect_true(file.exists(cache))
-  expect_silent(c2 <- aggregate_pseudobulk_s_g1_counts(f$files, f$md, names(f$gr), cache))
-  expect_identical(c1, c2)
-  md2 <- f$md
-  md2$pass_qc[which(md2$is_G1 %in% FALSE & md2$pass_qc)[1:2]] <- FALSE
-  expect_message(
-    c3 <- aggregate_pseudobulk_s_g1_counts(f$files, md2, names(f$gr), cache, verbose = TRUE),
-    "Aggregating"
-  )
-  expect_false(identical(c1$s_counts, c3$s_counts))
-  expect_identical(c1$g1_counts, c3$g1_counts)
+  # a single matrix is matched as is; an unnamed list gets no prefix
+  m1 <- f$mats$sB
+  md1 <- f$md[colnames(m1), ]
+  c_one <- aggregate_pseudobulk_s_g1_counts(m1, md1, names(f$gr))
+  c_ref <- aggregate_pseudobulk_s_g1_counts(list(sB = m1), f$md, names(f$gr))
+  expect_identical(c_one$s_counts, c_ref$s_counts)
+  expect_identical(attr(c_one, "selected_cells")$sample, "1")
+  expect_error(aggregate_pseudobulk_s_g1_counts(unname(f$mats), f$md, names(f$gr)))
 
   # input checks
-  expect_error(aggregate_pseudobulk_s_g1_counts(unname(f$files), f$md, names(f$gr)))
-  expect_error(aggregate_pseudobulk_s_g1_counts(f$files, f$md[-1, ], names(f$gr), verbose = FALSE))
-  expect_error(aggregate_pseudobulk_s_g1_counts(f$files, f$md, names(f$gr)[-1], verbose = FALSE))
+  expect_error(aggregate_pseudobulk_s_g1_counts(f$files, f$md, names(f$gr)))
+  expect_error(aggregate_pseudobulk_s_g1_counts(f$mats, f$md[-1, ], names(f$gr), verbose = FALSE))
+  expect_error(aggregate_pseudobulk_s_g1_counts(f$mats, f$md, names(f$gr)[-1], verbose = FALSE))
   md3 <- f$md
   md3$is_G1[startsWith(rownames(md3), "sB-")] <- FALSE
   expect_error(
-    aggregate_pseudobulk_s_g1_counts(f$files, md3, names(f$gr), verbose = FALSE),
+    aggregate_pseudobulk_s_g1_counts(f$mats, md3, names(f$gr), verbose = FALSE),
     "Both QC-passed S cells and G1 cells"
   )
 })
 
 test_that("calculate_pseudobulk_rt_g1_ratio z-scores the S/G1 ratio", {
   f <- synth_pseudobulk_files()
-  cnt <- aggregate_pseudobulk_s_g1_counts(f$files, f$md, names(f$gr), verbose = FALSE)
+  cnt <- aggregate_pseudobulk_s_g1_counts(f$mats, f$md, names(f$gr), verbose = FALSE)
   cnt$g1_counts[10] <- 0
   cnt$s_counts[11] <- NA
   rt <- calculate_pseudobulk_rt_g1_ratio(cnt, f$gr)
@@ -108,18 +102,11 @@ test_that("S/G1 ratio functions match the original script", {
   skip_on_cran()
   orig <- source_orig_file("processing/calculate_pseudobulk_rt_g1_ratio.R")
   f <- synth_pseudobulk_files()
-  cache_new <- tempfile(fileext = ".rds")
-  cache_old <- tempfile(fileext = ".rds")
-  new <- aggregate_pseudobulk_s_g1_counts(f$files, f$md, names(f$gr), cache_new, verbose = FALSE)
+  new <- aggregate_pseudobulk_s_g1_counts(f$mats, f$md, names(f$gr), verbose = FALSE)
   old <- suppressMessages(
-    orig$aggregate_pseudobulk_s_g1_counts(f$files, f$md, names(f$gr), cache_old)
+    orig$aggregate_pseudobulk_s_g1_counts(f$files, f$md, names(f$gr), tempfile(fileext = ".rds"))
   )
   expect_identical(new, old)
-  expect_identical(readRDS(cache_new), readRDS(cache_old))
-  # each implementation accepts the other's cache
-  expect_identical(
-    aggregate_pseudobulk_s_g1_counts(f$files, f$md, names(f$gr), cache_old), old
-  )
   expect_identical(
     calculate_pseudobulk_rt_g1_ratio(new, f$gr),
     orig$calculate_pseudobulk_rt_g1_ratio(old, f$gr)
@@ -134,18 +121,17 @@ test_that("S/G1 ratio functions match the original script", {
 
 test_that("export_pseudobulk_g1_ratio returns the ratio and writes a bigWig", {
   f <- synth_pseudobulk_files()
-  cnt <- aggregate_pseudobulk_s_g1_counts(f$files, f$md, names(f$gr), verbose = FALSE)
+  cnt <- aggregate_pseudobulk_s_g1_counts(f$mats, f$md, names(f$gr), verbose = FALSE)
   ref <- calculate_pseudobulk_rt_g1_ratio(cnt, f$gr)
-  rt <- export_pseudobulk_g1_ratio(f$files, f$md, f$gr, verbose = FALSE)
+  rt <- export_pseudobulk_g1_ratio(f$mats, f$md, f$gr, verbose = FALSE)
   expect_identical(S4Vectors::metadata(rt)$selected_cells, attr(cnt, "selected_cells"))
   S4Vectors::metadata(rt) <- list()
   expect_identical(rt, ref)
-  # genome bins given as an RDS path, arguments passed on through ...
+  # genome bins must be an object, not an RDS path
   gr_file <- tempfile(fileext = ".rds")
   saveRDS(f$gr, gr_file)
-  cache <- tempfile(fileext = ".rds")
-  rt2 <- export_pseudobulk_g1_ratio(f$files, f$md, gr_file, cache_file = cache, verbose = FALSE)
-  expect_true(file.exists(cache))
+  expect_error(export_pseudobulk_g1_ratio(f$mats, f$md, gr_file, verbose = FALSE))
+  rt2 <- export_pseudobulk_g1_ratio(f$mats, f$md, f$gr, verbose = FALSE)
   expect_identical(rt2$score, ref$score)
 
   skip_if_not_installed("rtracklayer")
@@ -154,10 +140,10 @@ test_that("export_pseudobulk_g1_ratio returns the ratio and writes a bigWig", {
   g <- f$gr
   GenomeInfoDb::seqlengths(g) <- c(chr1 = 8e6, chr2 = 8e6)
   bw <- tempfile(fileext = ".bigwig")
-  expect_invisible(export_pseudobulk_g1_ratio(f$files, f$md, g, file = bw, verbose = FALSE))
+  expect_invisible(export_pseudobulk_g1_ratio(f$mats, f$md, g, file = bw, verbose = FALSE))
   back <- rtracklayer::import(bw)
   expect_identical(length(back), length(ref))
   expect_identical(BiocGenerics::start(back), BiocGenerics::start(ref))
   expect_equal(back$score, ref$score, tolerance = 1e-6)
-  expect_error(export_pseudobulk_g1_ratio(f$files, f$md, f$gr, file = bw, verbose = FALSE))
+  expect_error(export_pseudobulk_g1_ratio(f$mats, f$md, f$gr, file = bw, verbose = FALSE))
 })

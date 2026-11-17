@@ -584,7 +584,7 @@ Package results attach to the object through `cell_id`, for example
 sums the RNA counts per condition with `AggregateExpression()` and scales
 each condition to counts per 10,000. The per-cell CP10K pseudobulk
 of S and G1 cells used for replication-coupled expression is
-`aggregate_pseudobulk_s_g1_counts()`, which reads the count files directly and
+`aggregate_pseudobulk_s_g1_counts()`, which takes the bin count matrices and
 needs no Seurat object.
 
 ```r

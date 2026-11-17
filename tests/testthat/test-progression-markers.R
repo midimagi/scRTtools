@@ -13,7 +13,7 @@ test_that("prepare_metadata and normalize_sparse_counts match the original", {
   meta_file <- withr::local_tempfile(fileext = ".rds")
   saveRDS(d$meta, meta_file)
   old <- orig$prepare_metadata(meta_file, colnames(d$counts), "state", 0.01, 0.99)
-  expect_identical(prepare_metadata(meta_file, colnames(d$counts)), old)
+  expect_error(prepare_metadata(meta_file, colnames(d$counts)), "not a file path")
   expect_identical(prepare_metadata(d$meta, colnames(d$counts)), old)
   expect_setequal(unique(old$state), c("ctr", "ama"))
   expect_true(any(old$s_phase_pass) && !all(old$s_phase_pass))
@@ -146,15 +146,28 @@ write_marker_seurat_objects <- function(d, dir) {
   invisible(dir)
 }
 
+read_marker_seurat_objects <- function(d, dir) {
+  stats::setNames(
+    lapply(d$samples, function(s) readRDS(file.path(dir, s, "wnn_rna_filtered.rds"))),
+    d$samples
+  )
+}
+
 test_that("load_and_merge_rna_counts merges per-sample Seurat objects", {
   skip_if_not_installed("SeuratObject")
   d <- synth_markers()
   dir <- write_marker_seurat_objects(d, withr::local_tempdir())
-  new <- load_and_merge_rna_counts(d$samples, dir)
+  objs <- read_marker_seurat_objects(d, dir)
+  new <- load_and_merge_rna_counts(objs)
   expect_identical(colnames(new), colnames(d$counts))
   expect_identical(nrow(new), nrow(d$counts) - 1L)
-  expect_error(load_and_merge_rna_counts("nope", dir), "Cannot find RNA object")
-  expect_error(load_and_merge_rna_counts(d$samples[1], dir, assay = "atac"), "absent")
+  # count matrices work as well as Seurat objects
+  mats <- lapply(objs, function(o) SeuratObject::GetAssayData(o, assay = "rna", layer = "counts"))
+  expect_identical(load_and_merge_rna_counts(mats), new)
+  expect_error(load_and_merge_rna_counts(unname(objs)), "named by unique sample names")
+  expect_error(load_and_merge_rna_counts(objs[[1]]), "named by unique sample names")
+  expect_error(load_and_merge_rna_counts(list(a = "x")), "neither a Seurat object")
+  expect_error(load_and_merge_rna_counts(objs[1], assay = "atac"), "absent")
 })
 
 test_that("load_and_merge_rna_counts matches the original", {
@@ -166,6 +179,6 @@ test_that("load_and_merge_rna_counts matches the original", {
   orig <- source_orig_markers()
   d <- synth_markers()
   dir <- write_marker_seurat_objects(d, withr::local_tempdir())
-  expect_identical(load_and_merge_rna_counts(d$samples, dir),
+  expect_identical(load_and_merge_rna_counts(read_marker_seurat_objects(d, dir)),
                    orig$load_and_merge_rna_counts(d$samples, dir))
 })

@@ -21,24 +21,24 @@
 
 #' @keywords internal
 #' @noRd
-.read_sample_rna_counts <- function(sample_name, data_dir, file_name, assay) {
-    input_file <- file.path(data_dir, sample_name, file_name)
-    if (!file.exists(input_file)) {
-        stop("Cannot find RNA object for ", sample_name, ": ", input_file)
-    }
-
-    wnn <- readRDS(input_file)
-    if (!assay %in% SeuratObject::Assays(wnn)) {
-        stop("RNA assay named '", assay, "' is absent from: ", input_file)
-    }
-
-    # Seurat v5 API; the fallback keeps compatibility with older objects.
-    counts <- tryCatch(
-        SeuratObject::GetAssayData(wnn, assay = assay, layer = "counts"),
-        error = function(e) {
-            SeuratObject::GetAssayData(wnn, assay = assay, slot = "counts")
+.sample_rna_counts <- function(x, sample_name, assay) {
+    if (inherits(x, "Seurat")) {
+        rlang::check_installed("SeuratObject", reason = "to use Seurat objects.")
+        if (!assay %in% SeuratObject::Assays(x)) {
+            stop("RNA assay named '", assay, "' is absent from sample: ", sample_name)
         }
-    )
+        # Seurat v5 API; the fallback keeps compatibility with older objects.
+        counts <- tryCatch(
+            SeuratObject::GetAssayData(x, assay = assay, layer = "counts"),
+            error = function(e) {
+                SeuratObject::GetAssayData(x, assay = assay, slot = "counts")
+            }
+        )
+    } else if (inherits(x, "Matrix") || is.matrix(x)) {
+        counts <- x
+    } else {
+        stop("Sample '", sample_name, "' is neither a Seurat object nor a count matrix.")
+    }
 
     if (is.null(rownames(counts)) || is.null(colnames(counts))) {
         stop("RNA count matrix lacks gene or cell names for sample: ", sample_name)
@@ -52,30 +52,30 @@
     counts
 }
 
-#' Load and merge RNA count matrices of several samples
+#' Merge RNA count matrices of several samples
 #'
-#' Reads one Seurat object per sample from
-#' `file.path(data_dir, sample, file_name)`, extracts the raw counts of
-#' `assay`, prefixes cell IDs with `"<sample>-"` (unless already prefixed),
-#' keeps the genes common to all samples and column-binds the matrices.
+#' Takes one Seurat object (or gene-by-cell count matrix) per sample,
+#' extracts the raw counts of `assay`, prefixes cell IDs with `"<sample>-"`
+#' (unless already prefixed), keeps the genes common to all samples and
+#' column-binds the matrices. To start from files, read them first, e.g.
+#' `lapply(stats::setNames(files, samples), readRDS)`.
 #'
-#' @param sample_names Character vector of sample names (sub-directories of
-#'   `data_dir`).
-#' @param data_dir Directory holding one sub-directory per sample.
-#' @param file_name Name of the Seurat `.rds` file inside each sample
-#'   directory.
-#' @param assay Name of the RNA assay.
+#' @param rna_objects Named list of Seurat objects or gene-by-cell count
+#'   matrices, one per sample; the names are the sample names.
+#' @param assay Name of the RNA assay (used for Seurat objects).
 #'
 #' @return A gene-by-cell count matrix (sparse, as stored in the objects).
 #' @export
-load_and_merge_rna_counts <- function(sample_names, data_dir,
-                                      file_name = "wnn_rna_filtered.rds",
-                                      assay = "rna") {
-    rlang::check_installed("SeuratObject", reason = "to read Seurat objects.")
+load_and_merge_rna_counts <- function(rna_objects, assay = "rna") {
+    if (!is.list(rna_objects) || inherits(rna_objects, "Seurat") ||
+        length(rna_objects) == 0L || is.null(names(rna_objects)) ||
+        any(!nzchar(names(rna_objects))) || anyDuplicated(names(rna_objects))) {
+        stop("'rna_objects' must be a non-empty list named by unique sample names.")
+    }
     counts_by_sample <- stats::setNames(
-        lapply(sample_names, .read_sample_rna_counts, data_dir = data_dir,
-               file_name = file_name, assay = assay),
-        sample_names
+        Map(.sample_rna_counts, rna_objects, names(rna_objects),
+            MoreArgs = list(assay = assay)),
+        names(rna_objects)
     )
 
     common_genes <- Reduce(intersect, lapply(counts_by_sample, rownames))
@@ -87,7 +87,7 @@ load_and_merge_rna_counts <- function(sample_names, data_dir,
         counts_by_sample,
         function(x) x[common_genes, , drop = FALSE]
     )
-    merged <- do.call(cbind, counts_by_sample)
+    merged <- do.call(cbind, unname(counts_by_sample))
 
     if (anyDuplicated(colnames(merged))) {
         duplicated_ids <- unique(colnames(merged)[duplicated(colnames(merged))])
@@ -110,8 +110,7 @@ load_and_merge_rna_counts <- function(sample_names, data_dir,
 #' `[min_rep_percent, max_rep_percent]` and a non-missing group.
 #'
 #' @param meta_data A data.frame of cell metadata with cell IDs as row names
-#'   and columns `sample`, `is_G1`, `rep_percent`, `pass_qc`; or the path of
-#'   an `.rds` file holding one.
+#'   and columns `sample`, `is_G1`, `rep_percent`, `pass_qc`.
 #' @param rna_cell_ids Cell IDs of the RNA count matrix.
 #' @param group_by_col Metadata column defining the analysis groups.
 #' @param min_rep_percent,max_rep_percent Range of replication progress kept.
@@ -126,11 +125,8 @@ load_and_merge_rna_counts <- function(sample_names, data_dir,
 prepare_metadata <- function(meta_data, rna_cell_ids, group_by_col = "state",
                              min_rep_percent = 0.01, max_rep_percent = 0.99,
                              state_patterns = c(ama = "-ama-", ctr = "mESC-rep")) {
-    if (is.character(meta_data) && length(meta_data) == 1L) {
-        if (!file.exists(meta_data)) {
-            stop("Cannot find merged metadata: ", meta_data)
-        }
-        meta_data <- readRDS(meta_data)
+    if (is.character(meta_data)) {
+        stop("'meta_data' must be a data.frame, not a file path; read it first.")
     }
     meta_data <- as.data.frame(meta_data, stringsAsFactors = FALSE)
     required_columns <- c("sample", "is_G1", "rep_percent", "pass_qc")

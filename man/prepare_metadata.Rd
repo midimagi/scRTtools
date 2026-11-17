@@ -15,8 +15,7 @@ prepare_metadata(
 }
 \arguments{
 \item{meta_data}{A data.frame of cell metadata with cell IDs as row names
-and columns \code{sample}, \code{is_G1}, \code{rep_percent}, \code{pass_qc}; or the path of
-an \code{.rds} file holding one.}
+and columns \code{sample}, \code{is_G1}, \code{rep_percent}, \code{pass_qc}.}
 
 \item{rna_cell_ids}{Cell IDs of the RNA count matrix.}
 

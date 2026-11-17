@@ -401,9 +401,11 @@ filter_windows <- function(wins_grl,
 #'   `row_sum`.
 #' @param reads_list Named list of numeric read-position vectors, one per
 #'   chromosome (e.g. `count_reads()$reads_list`).
-#' @param coords_list Named character vector of RDS file paths, one per
-#'   chromosome; each RDS holds a list of 401 numeric vectors of genome
-#'   positions per GC bin.
+#' @param coords_list Genome positions per GC bin, either a named list (one
+#'   element per chromosome, each a list of 401 numeric vectors) or a
+#'   function taking a chromosome name and returning that list. The function
+#'   form keeps only one chromosome in memory, e.g.
+#'   `function(chr) readRDS(coords_files[[chr]])`.
 #' @param gc_bins_use Integer indices (1-401) of GC bins used for correction.
 #' @param verbose Logical; print progress messages. Default `FALSE`.
 #'
@@ -435,8 +437,9 @@ calculate_OE_ratio <- function(wins_filtered,
   if (!is.list(reads_list) || is.null(names(reads_list))) {
     stop("'reads_list' must be a named list.", call. = FALSE)
   }
-  if (!is.character(coords_list) || is.null(names(coords_list))) {
-    stop("'coords_list' must be a named vector of RDS file paths.", call. = FALSE)
+  if (!is.function(coords_list) &&
+      (!is.list(coords_list) || is.null(names(coords_list)))) {
+    stop("'coords_list' must be a named list or a function(chr).", call. = FALSE)
   }
 
   chrs <- names(wins_filtered)
@@ -453,18 +456,12 @@ calculate_OE_ratio <- function(wins_filtered,
   if (!all(chrs %in% names(reads_list))) {
     stop("'reads_list' must contain all chromosomes in names(wins_filtered).", call. = FALSE)
   }
-  if (!all(chrs %in% names(coords_list))) {
+  if (!is.function(coords_list) && !all(chrs %in% names(coords_list))) {
     stop("'coords_list' must contain all chromosomes in names(wins_filtered).", call. = FALSE)
   }
 
   if (!all(vapply(reads_list[chrs], is.numeric, logical(1)))) {
     stop("'reads_list' elements must be numeric read-position vectors.", call. = FALSE)
-  }
-
-  if (!all(vapply(coords_list[chrs], function(x) {
-    is.character(x) && length(x) == 1L && !is.na(x) && file.exists(x)
-  }, logical(1)))) {
-    stop("'coords_list' elements must be existing RDS file paths.", call. = FALSE)
   }
 
   if (!is.numeric(gc_bins_use) ||
@@ -524,8 +521,8 @@ calculate_OE_ratio <- function(wins_filtered,
 
     reads_filtered[[chr]] <- reads_chr
 
-    coords <- readRDS(coords_list[[chr]])
-    if (length(coords) != 401L) {
+    coords <- if (is.function(coords_list)) coords_list(chr) else coords_list[[chr]]
+    if (!is.list(coords) || length(coords) != 401L) {
       stop("`coords_list[[", chr, "]]` should contain 401 GC-bin vectors.")
     }
 

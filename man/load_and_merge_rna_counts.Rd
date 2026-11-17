@@ -2,32 +2,23 @@
 % Please edit documentation in R/progression_markers.R
 \name{load_and_merge_rna_counts}
 \alias{load_and_merge_rna_counts}
-\title{Load and merge RNA count matrices of several samples}
+\title{Merge RNA count matrices of several samples}
 \usage{
-load_and_merge_rna_counts(
-  sample_names,
-  data_dir,
-  file_name = "wnn_rna_filtered.rds",
-  assay = "rna"
-)
+load_and_merge_rna_counts(rna_objects, assay = "rna")
 }
 \arguments{
-\item{sample_names}{Character vector of sample names (sub-directories of
-\code{data_dir}).}
+\item{rna_objects}{Named list of Seurat objects or gene-by-cell count
+matrices, one per sample; the names are the sample names.}
 
-\item{data_dir}{Directory holding one sub-directory per sample.}
-
-\item{file_name}{Name of the Seurat \code{.rds} file inside each sample
-directory.}
-
-\item{assay}{Name of the RNA assay.}
+\item{assay}{Name of the RNA assay (used for Seurat objects).}
 }
 \value{
 A gene-by-cell count matrix (sparse, as stored in the objects).
 }
 \description{
-Reads one Seurat object per sample from
-\code{file.path(data_dir, sample, file_name)}, extracts the raw counts of
-\code{assay}, prefixes cell IDs with \code{"<sample>-"} (unless already prefixed),
-keeps the genes common to all samples and column-binds the matrices.
+Takes one Seurat object (or gene-by-cell count matrix) per sample,
+extracts the raw counts of \code{assay}, prefixes cell IDs with \code{"<sample>-"}
+(unless already prefixed), keeps the genes common to all samples and
+column-binds the matrices. To start from files, read them first, e.g.
+\code{lapply(stats::setNames(files, samples), readRDS)}.
 }

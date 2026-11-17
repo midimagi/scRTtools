@@ -33,3 +33,31 @@ test_that("the example dataset is consistent and usable", {
   expect_true(all(is.finite(mapd$mapd)))
   expect_true(all(is.na(mapd$mapd_error)))
 })
+
+test_that("the vignette data are downloaded, checked and cached", {
+  cache <- withr::local_tempdir()
+  # a file with the wrong content is rejected and not cached
+  bad <- withr::local_tempfile(fileext = ".rds")
+  saveRDS(1:3, bad)
+  withr::local_options(scRTtools.vignette_data_url = paste0("file://", bad))
+  expect_error(scrt_example_data("vignette", cache_dir = cache), "MD5")
+  expect_length(list.files(cache), 0L)
+  expect_error(
+    withr::with_options(list(scRTtools.vignette_data_url = "file:///no/such/file.rds"),
+                        suppressWarnings(scrt_example_data("vignette", cache_dir = cache))),
+    "Could not download"
+  )
+
+  # the real file, when a local copy is available (SCRTTOOLS_VIGNETTE_DATA)
+  local_copy <- Sys.getenv("SCRTTOOLS_VIGNETTE_DATA")
+  skip_if_not(nzchar(local_copy) && file.exists(local_copy), "no local copy of the vignette data")
+  withr::local_options(scRTtools.vignette_data_url = paste0("file://", normalizePath(local_copy)))
+  ex <- suppressMessages(scrt_example_data("vignette", cache_dir = cache))
+  expect_named(ex, c("bins", "bin_counts", "g1_windows", "window_counts", "rna_counts",
+                     "genes", "bulk_rt", "meta", "info"))
+  expect_identical(dim(ex$bin_counts), c(123148L, 500L))
+  expect_identical(list.files(cache), "scRT1_vignette.rds")
+  # the second call reads the cache, so a broken URL does not matter
+  withr::local_options(scRTtools.vignette_data_url = "file:///no/such/file.rds")
+  expect_identical(dim(scrt_example_data("vignette", cache_dir = cache)$meta), c(500L, 13L))
+})

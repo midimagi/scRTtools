@@ -26,9 +26,11 @@ and metadata columns \code{GC_bin_000} ... \code{GC_bin_400} (bases per GC bin) 
 \item{reads_list}{Named list of numeric read-position vectors, one per
 chromosome (e.g. \code{count_reads()$reads_list}).}
 
-\item{coords_list}{Named character vector of RDS file paths, one per
-chromosome; each RDS holds a list of 401 numeric vectors of genome
-positions per GC bin.}
+\item{coords_list}{Genome positions per GC bin, either a named list (one
+element per chromosome, each a list of 401 numeric vectors) or a
+function taking a chromosome name and returning that list. The function
+form keeps only one chromosome in memory, e.g.
+\code{function(chr) readRDS(coords_files[[chr]])}.}
 
 \item{gc_bins_use}{Integer indices (1-401) of GC bins used for correction.}
 

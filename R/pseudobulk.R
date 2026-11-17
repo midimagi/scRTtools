@@ -279,26 +279,27 @@ calculate_pseudobulk_rt <- function(
 
 #' Aggregate per-cell CP10K counts of S and G1 cells over several samples
 #'
-#' Reads one raw genome-bin count matrix per sample, normalises every selected
+#' Takes one raw genome-bin count matrix per sample, normalises every selected
 #' cell to counts per 10,000 (the denominator is the cell's total over all raw
 #' bins, before any mappability filter) and sums the normalised counts per bin
 #' over the QC-passed S cells (`is_G1` is `FALSE` and `pass_qc` is `TRUE`) and
-#' over the G1 cells (`is_G1` is `TRUE`). The matrices are read one at a time.
+#' over the G1 cells (`is_G1` is `TRUE`).
 #'
-#' Cell names of a matrix that do not start with `"<sample>-"` get that
-#' prefix before they are matched to `rownames(meta_data)`; every cell of
-#' every matrix must be present in `meta_data`. Each sample must contribute at
-#' least one S cell and one G1 cell.
+#' When `genobins` is a named list, cell names of a matrix that do not start
+#' with `"<sample>-"` get that prefix before they are matched to
+#' `rownames(meta_data)`; a single matrix (or an unnamed list) is matched as
+#' is. Every cell of every matrix must be present in `meta_data`, and each
+#' matrix must contribute at least one S cell and one G1 cell.
 #'
-#' @param genobins_files Named character vector of RDS files, one sparse
-#'   bins x cells count matrix per sample; the names are the sample ids.
+#' To start from the per-sample RDS files, read them first, e.g.
+#' `lapply(files, readRDS)` with a named `files` vector.
+#'
+#' @param genobins A sparse bins x cells count matrix, or a list of them (one
+#'   per sample; the names, if any, are the sample ids).
 #' @param meta_data A `data.frame` with cell ids as row names and logical
 #'   columns `is_G1` and `pass_qc`.
 #' @param bin_ids Character vector of bin ids. Each matrix must have exactly
 #'   these row names (rows are reordered if needed).
-#' @param cache_file `NULL` or the path of an RDS cache. The cache is reused
-#'   only when the files (path, size, modification time), the selected cells
-#'   and `bin_ids` are unchanged; otherwise it is overwritten.
 #' @param verbose Print one message per sample. Default `FALSE`.
 #'
 #' @return A `data.frame` with columns `bin_id`, `s_counts` and `g1_counts`
@@ -309,50 +310,44 @@ calculate_pseudobulk_rt <- function(
 #'   [export_pseudobulk_g1_ratio()]
 #' @export
 aggregate_pseudobulk_s_g1_counts <- function(
-    genobins_files, meta_data, bin_ids, cache_file = NULL, verbose = FALSE
+    genobins, meta_data, bin_ids, verbose = FALSE
 ) {
+    if (inherits(genobins, "Matrix") || is.matrix(genobins)) {
+        genobins <- list(genobins)
+    }
     stopifnot(
-        length(genobins_files) > 0L,
-        !is.null(names(genobins_files)),
-        !anyDuplicated(names(genobins_files)),
-        all(file.exists(genobins_files)),
+        is.list(genobins), length(genobins) > 0L,
+        is.null(names(genobins)) || !anyDuplicated(names(genobins)),
         !anyDuplicated(rownames(meta_data)),
         !anyDuplicated(bin_ids),
         all(c("is_G1", "pass_qc") %in% colnames(meta_data))
     )
+    sample_ids <- names(genobins)
     s_cells <- rownames(meta_data)[
         meta_data$is_G1 %in% FALSE & meta_data$pass_qc %in% TRUE
     ]
     g1_cells <- rownames(meta_data)[meta_data$is_G1 %in% TRUE]
-    signature <- list(
-        normalization = "cp10k_per_cell_v1",
-        files = normalizePath(genobins_files),
-        file_info = file.info(genobins_files)[, c("size", "mtime")],
-        s_cells = s_cells, g1_cells = g1_cells, bin_ids = bin_ids
-    )
-    if (!is.null(cache_file) && file.exists(cache_file)) {
-        cached <- readRDS(cache_file)
-        if (identical(cached$signature, signature)) return(cached$counts)
-    }
 
     counts <- data.frame(
         bin_id = bin_ids, s_counts = numeric(length(bin_ids)),
         g1_counts = numeric(length(bin_ids)), stringsAsFactors = FALSE
     )
-    selected <- vector("list", length(genobins_files))
-    for (i in seq_along(genobins_files)) {
-        sample_id <- names(genobins_files)[i]
+    selected <- vector("list", length(genobins))
+    for (i in seq_along(genobins)) {
+        sample_id <- if (is.null(sample_ids)) as.character(i) else sample_ids[i]
         .vmsg(verbose, "Aggregating per-cell S/G1 CP10K: ", sample_id)
-        mat <- readRDS(genobins_files[[i]])
-        stopifnot(inherits(mat, "sparseMatrix"))
+        mat <- genobins[[i]]
+        stopifnot(inherits(mat, "Matrix") || is.matrix(mat))
         if (!identical(rownames(mat), bin_ids)) {
             stopifnot(setequal(rownames(mat), bin_ids))
             mat <- mat[bin_ids, , drop = FALSE]
         }
         ids <- colnames(mat)
-        if (is.null(ids)) stop("Raw matrix has no cell IDs: ", sample_id)
-        ids <- ifelse(startsWith(ids, paste0(sample_id, "-")),
-                      ids, paste0(sample_id, "-", ids))
+        if (is.null(ids)) stop("Count matrix has no cell IDs: ", sample_id)
+        if (!is.null(sample_ids)) {
+            ids <- ifelse(startsWith(ids, paste0(sample_id, "-")),
+                          ids, paste0(sample_id, "-", ids))
+        }
         stopifnot(!anyDuplicated(ids), all(ids %in% rownames(meta_data)))
         s_idx <- which(ids %in% s_cells)
         g1_idx <- which(ids %in% g1_cells)
@@ -369,7 +364,7 @@ aggregate_pseudobulk_s_g1_counts <- function(
                  paste(utils::head(ids[invalid], 10L), collapse = ", "))
         }
         # rowSums(mat %*% Diagonal(x = 1e4 / colSums(mat))), evaluated as
-        # a sparse matrix-vector product without materializing normalized cells.
+        # a matrix-vector product without materializing normalized cells.
         counts$s_counts <- counts$s_counts + as.numeric(
             mat[, s_idx, drop = FALSE] %*% (1e4 / library_size[s_idx])
         )
@@ -379,14 +374,9 @@ aggregate_pseudobulk_s_g1_counts <- function(
         selected[[i]] <- data.frame(
             sample = sample_id, n_s = length(s_idx), n_g1 = length(g1_idx)
         )
-        rm(mat)
-        invisible(gc())
     }
     attr(counts, "normalization") <- "cp10k_per_cell_v1"
     attr(counts, "selected_cells") <- do.call(rbind, selected)
-    if (!is.null(cache_file)) {
-        saveRDS(list(signature = signature, counts = counts), cache_file)
-    }
     counts
 }
 
@@ -443,12 +433,12 @@ calculate_pseudobulk_rt_g1_ratio <- function(counts, genome_granges) {
 #'
 #' @inheritParams aggregate_pseudobulk_s_g1_counts
 #' @param genome_granges Named `GRanges` with the metadata column
-#'   `is_mappable`, or the path of an RDS file holding one. Its names are the
-#'   bin ids. Writing a bigWig needs chromosome lengths in its `seqinfo`.
+#'   `is_mappable`. Its names are the bin ids. Writing a bigWig needs
+#'   chromosome lengths in its `seqinfo`.
 #' @param file `NULL` (default, nothing is written) or the path of the bigWig
 #'   that receives the `score` column (needs the rtracklayer package).
 #' @param ... Passed to [aggregate_pseudobulk_s_g1_counts()], e.g.
-#'   `cache_file`.
+#'   `verbose`.
 #'
 #' @return The `GRanges` of [calculate_pseudobulk_rt_g1_ratio()], with the
 #'   per-sample cell numbers in `S4Vectors::metadata(x)$selected_cells`;
@@ -456,12 +446,8 @@ calculate_pseudobulk_rt_g1_ratio <- function(counts, genome_granges) {
 #'
 #' @export
 export_pseudobulk_g1_ratio <- function(
-    genobins_files, meta_data, genome_granges, file = NULL, ...
+    genobins, meta_data, genome_granges, file = NULL, ...
 ) {
-    if (is.character(genome_granges)) {
-        stopifnot(length(genome_granges) == 1L, file.exists(genome_granges))
-        genome_granges <- readRDS(genome_granges)
-    }
     stopifnot(
         inherits(genome_granges, "GRanges"),
         !is.null(names(genome_granges))
@@ -471,7 +457,7 @@ export_pseudobulk_g1_ratio <- function(
         rlang::check_installed("rtracklayer", reason = "to write bigWig files.")
     }
     counts <- aggregate_pseudobulk_s_g1_counts(
-        genobins_files, meta_data, names(genome_granges), ...
+        genobins, meta_data, names(genome_granges), ...
     )
     gr <- calculate_pseudobulk_rt_g1_ratio(counts, genome_granges)
     S4Vectors::metadata(gr)$selected_cells <- attr(counts, "selected_cells")

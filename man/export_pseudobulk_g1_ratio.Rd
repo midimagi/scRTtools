@@ -5,7 +5,7 @@
 \title{S/G1 ratio pseudobulk for a group of samples, optionally written to bigWig}
 \usage{
 export_pseudobulk_g1_ratio(
-  genobins_files,
+  genobins,
   meta_data,
   genome_granges,
   file = NULL,
@@ -13,21 +13,21 @@ export_pseudobulk_g1_ratio(
 )
 }
 \arguments{
-\item{genobins_files}{Named character vector of RDS files, one sparse
-bins x cells count matrix per sample; the names are the sample ids.}
+\item{genobins}{A sparse bins x cells count matrix, or a list of them (one
+per sample; the names, if any, are the sample ids).}
 
 \item{meta_data}{A \code{data.frame} with cell ids as row names and logical
 columns \code{is_G1} and \code{pass_qc}.}
 
 \item{genome_granges}{Named \code{GRanges} with the metadata column
-\code{is_mappable}, or the path of an RDS file holding one. Its names are the
-bin ids. Writing a bigWig needs chromosome lengths in its \code{seqinfo}.}
+\code{is_mappable}. Its names are the bin ids. Writing a bigWig needs
+chromosome lengths in its \code{seqinfo}.}
 
 \item{file}{\code{NULL} (default, nothing is written) or the path of the bigWig
 that receives the \code{score} column (needs the rtracklayer package).}
 
 \item{...}{Passed to \code{\link[=aggregate_pseudobulk_s_g1_counts]{aggregate_pseudobulk_s_g1_counts()}}, e.g.
-\code{cache_file}.}
+\code{verbose}.}
 }
 \value{
 The \code{GRanges} of \code{\link[=calculate_pseudobulk_rt_g1_ratio]{calculate_pseudobulk_rt_g1_ratio()}}, with the

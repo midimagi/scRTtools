@@ -47,10 +47,11 @@ write_reads_dir <- function(reads) {
   d
 }
 
-# Per-base GC-bin labels -> wins_gc GRangesList + coords RDS paths.
+# Per-base GC-bin labels -> wins_gc GRangesList + coords (in memory and as RDS paths).
 synth_gc <- function(grl, seed = 2L) {
   gc_cols <- sprintf("GC_bin_%03d", 0:400)
-  coords_list <- character()
+  coords_list <- list()
+  coords_files <- character()
   wins_gc <- list()
   withr::with_seed(seed, {
     for (chr in names(grl)) {
@@ -60,7 +61,8 @@ synth_gc <- function(grl, seed = 2L) {
       coords <- lapply(1:401, function(j) as.numeric(pos[lab == j]))
       f <- tempfile(paste0("coords_", chr, "_"), fileext = ".rds")
       saveRDS(coords, f)
-      coords_list[chr] <- f
+      coords_files[chr] <- f
+      coords_list[[chr]] <- coords
       win_idx <- findInterval(pos, BiocGenerics::start(gr))
       tab <- matrix(0, length(gr), 401, dimnames = list(NULL, gc_cols))
       tt <- table(factor(win_idx, levels = seq_along(gr)),
@@ -72,7 +74,8 @@ synth_gc <- function(grl, seed = 2L) {
       wins_gc[[chr]] <- g
     }
   })
-  list(wins_gc = GenomicRanges::GRangesList(wins_gc), coords_list = coords_list)
+  list(wins_gc = GenomicRanges::GRangesList(wins_gc), coords_list = coords_list,
+       coords_files = coords_files)
 }
 
 # Path to the original calculate_rt.R / make_fixed_bins.R for regression tests.

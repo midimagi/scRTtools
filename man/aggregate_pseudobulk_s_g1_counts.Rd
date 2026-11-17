@@ -4,27 +4,17 @@
 \alias{aggregate_pseudobulk_s_g1_counts}
 \title{Aggregate per-cell CP10K counts of S and G1 cells over several samples}
 \usage{
-aggregate_pseudobulk_s_g1_counts(
-  genobins_files,
-  meta_data,
-  bin_ids,
-  cache_file = NULL,
-  verbose = FALSE
-)
+aggregate_pseudobulk_s_g1_counts(genobins, meta_data, bin_ids, verbose = FALSE)
 }
 \arguments{
-\item{genobins_files}{Named character vector of RDS files, one sparse
-bins x cells count matrix per sample; the names are the sample ids.}
+\item{genobins}{A sparse bins x cells count matrix, or a list of them (one
+per sample; the names, if any, are the sample ids).}
 
 \item{meta_data}{A \code{data.frame} with cell ids as row names and logical
 columns \code{is_G1} and \code{pass_qc}.}
 
 \item{bin_ids}{Character vector of bin ids. Each matrix must have exactly
 these row names (rows are reordered if needed).}
-
-\item{cache_file}{\code{NULL} or the path of an RDS cache. The cache is reused
-only when the files (path, size, modification time), the selected cells
-and \code{bin_ids} are unchanged; otherwise it is overwritten.}
 
 \item{verbose}{Print one message per sample. Default \code{FALSE}.}
 }
@@ -34,17 +24,21 @@ A \code{data.frame} with columns \code{bin_id}, \code{s_counts} and \code{g1_cou
 (\code{"cp10k_per_cell_v1"}) and \code{selected_cells} (cells used per sample).
 }
 \description{
-Reads one raw genome-bin count matrix per sample, normalises every selected
+Takes one raw genome-bin count matrix per sample, normalises every selected
 cell to counts per 10,000 (the denominator is the cell's total over all raw
 bins, before any mappability filter) and sums the normalised counts per bin
 over the QC-passed S cells (\code{is_G1} is \code{FALSE} and \code{pass_qc} is \code{TRUE}) and
-over the G1 cells (\code{is_G1} is \code{TRUE}). The matrices are read one at a time.
+over the G1 cells (\code{is_G1} is \code{TRUE}).
 }
 \details{
-Cell names of a matrix that do not start with \code{"<sample>-"} get that
-prefix before they are matched to \code{rownames(meta_data)}; every cell of
-every matrix must be present in \code{meta_data}. Each sample must contribute at
-least one S cell and one G1 cell.
+When \code{genobins} is a named list, cell names of a matrix that do not start
+with \code{"<sample>-"} get that prefix before they are matched to
+\code{rownames(meta_data)}; a single matrix (or an unnamed list) is matched as
+is. Every cell of every matrix must be present in \code{meta_data}, and each
+matrix must contribute at least one S cell and one G1 cell.
+
+To start from the per-sample RDS files, read them first, e.g.
+\code{lapply(files, readRDS)} with a named \code{files} vector.
 }
 \seealso{
 \code{\link[=calculate_pseudobulk_rt_g1_ratio]{calculate_pseudobulk_rt_g1_ratio()}},
